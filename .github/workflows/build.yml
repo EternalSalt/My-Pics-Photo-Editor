@@ -1,0 +1,46 @@
+name: Build Windows app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: npm install
+
+      - name: Build installer and portable app
+        run: npm run dist
+
+      - name: Read version
+        id: v
+        shell: bash
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: My Pics ${{ steps.v.outputs.version }}
+          body: |
+            Download **My-Pics-Setup-${{ steps.v.outputs.version }}.exe** to install My Pics,
+            or **My-Pics-Portable-${{ steps.v.outputs.version }}.exe** to run it without installing.
+
+            Windows may show "Windows protected your PC" because the app is not code-signed.
+            Click More info, then Run anyway.
+          files: |
+            dist/My-Pics-Setup-*.exe
+            dist/My-Pics-Portable-*.exe
+          overwrite_files: true

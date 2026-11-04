@@ -1,0 +1,40 @@
+{
+  "name": "my-pics",
+  "version": "1.0.0",
+  "description": "My Pics photo editor",
+  "main": "main.js",
+  "author": "My Pics",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.mypics.app",
+    "productName": "My Pics",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "build/**"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "My-Pics-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "My-Pics-Portable-${version}.${ext}"
+    }
+  }
+}
