@@ -1,5 +1,5 @@
-My Pics v1 for Windows
-======================
+My Pics for Windows and Mac
+===========================
 
 OPTION A: Build it on GitHub (nothing to install on your computer)
  1. Make a free account at github.com, click New repository, name it my-pics
@@ -25,9 +25,21 @@ OPTION B: Build it on your own PC
  2. Double-click build-windows.bat. The files appear in the "dist" folder.
  To try it without building: run  npm install  then  npm start
 
-What you get
+What you get (Windows)
  My-Pics-Setup-X.Y.Z.exe      installs My Pics like a normal program
  My-Pics-Portable-X.Y.Z.exe   runs without installing
+
+Mac
+ - The same GitHub build also makes Mac files. Pick the one for your Mac:
+      My-Pics-Mac-X.Y.Z-arm64.dmg   Macs with an Apple chip (M1 or newer)
+      My-Pics-Mac-X.Y.Z-x64.dmg     Intel Macs
+   (Apple menu > About This Mac shows which chip you have.)
+ - Open the .dmg and drag My Pics into Applications.
+ - The first time, macOS may block the app because it is not notarized. Open System
+   Settings > Privacy & Security, scroll down and click Open Anyway. If the Mac says
+   the app is "damaged", open Terminal and run:
+      xattr -cr "/Applications/My Pics.app"
+ - Mac files can only be built on GitHub (or on a Mac with  npm run dist:mac ).
 
 Watermark
  - Click Watermark settings to use your own logo (PNG, JPEG or WebP) or your own text.

@@ -49,7 +49,9 @@ ipcMain.handle('write-file', async (e, rel, data) => {
 });
 
 app.whenReady().then(() => {
-  Menu.setApplicationMenu(null);
+  Menu.setApplicationMenu(process.platform === 'darwin'
+    ? Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }])
+    : null);
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
