@@ -26,8 +26,13 @@ OPTION B: Build it on your own PC
  To try it without building: run  npm install  then  npm start
 
 What you get
- My-Pics-Setup-1.0.0.exe      installs My Pics like a normal program
- My-Pics-Portable-1.0.0.exe   runs without installing
+ My-Pics-Setup-X.Y.Z.exe      installs My Pics like a normal program
+ My-Pics-Portable-X.Y.Z.exe   runs without installing
+
+Watermark
+ - Click Watermark settings to use your own logo (PNG, JPEG or WebP) or your own text.
+   Choose opacity, size and position and see it on your photo as you go.
+   Your choices are remembered on this computer.
 
 Notes
  - The app is not code-signed, so Windows may show "Windows protected your PC".

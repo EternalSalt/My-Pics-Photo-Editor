@@ -97,6 +97,14 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .th .mv button{width:24px;height:24px;border:0;border-radius:7px;background:rgba(10,12,18,.72);color:#fff;cursor:pointer;font:inherit;line-height:1;padding:0}
 .th .mv button:hover{background:var(--blue);color:#06121d}
 .bar{flex-wrap:wrap}
+.ws{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr);gap:18px;text-align:left;width:min(900px,100%)}
+.ws .wsprev{display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;background:var(--stage);border-radius:12px;padding:10px;min-height:200px}
+.ws img{max-width:100%;max-height:68vh;border-radius:8px;margin:0}
+.ws .wsctl{overflow:auto;max-height:78vh;padding-right:4px}
+.ws .btn{display:block;width:100%;text-align:left;margin-bottom:6px}
+.ws .txt{margin-bottom:8px}
+.seg{display:flex;gap:6px;width:100%}.seg .btn{flex:1;text-align:center;margin:0}
+@media (max-width:760px){.ws{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -110,8 +118,9 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
  <input type="file" id="folder" webkitdirectory multiple hidden>
  <div class="hint">Opening new photos clears the current set.</div>
  <h2>Save</h2>
+ <button class="btn" id="wsopen">Watermark settings…</button>
  <label class="hint" for="wmode">Watermark for preview and single save</label>
- <select class="txt" id="wmode"><option value="corner">Small, bottom right</option><option value="tile">Over the whole image</option><option value="none">None</option></select>
+ <select class="txt" id="wmode"><option value="corner">Small corner mark</option><option value="tile">Over the whole image</option><option value="none">None</option></select>
  <label class="hint" for="pre">File name start (optional)</label>
  <input class="txt" id="pre" placeholder="e.g. Smith-">
  <div class="row"><label for="pad">Pad numbers (01, 02…)</label><input type="checkbox" id="pad"></div>
@@ -191,6 +200,32 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
   <p id="outname"></p>
   <div class="bar"><button class="btn" id="prev">Previous</button><select class="txt" id="wmode2" style="width:auto"><option value="corner">Small watermark</option><option value="tile">Whole-image watermark</option><option value="none">No watermark</option></select><button class="btn" id="next">Next</button></div>
   <div class="bar"><button class="btn alt" data-save="one">Save this photo</button><button class="btn pri" data-save="zip">Save all (clean + watermarked)</button><button class="btn" data-save="prev">Save all as preview</button><button class="btn" id="close">Close</button></div>
+ </div>
+</div>
+<div class="modal" id="wsmodal" hidden>
+ <div class="box ws" role="dialog" aria-label="Watermark settings">
+  <div class="wsprev"><img id="wsimg" alt="Watermark preview"><div class="seg"><button class="btn on" id="wsc">Corner mark</button><button class="btn" id="wst">Whole image</button></div></div>
+  <div class="wsctl">
+   <h2>Your watermark</h2>
+   <label class="hint" for="wssrc">Use</label>
+   <select class="txt" id="wssrc"><option value="logo">My Pics logo (built in)</option><option value="image">My own image or logo</option><option value="text">My own text</option><option value="none">No watermark</option></select>
+   <div id="wsimgbox" hidden>
+    <button class="btn" id="wsup">Choose image…</button><input type="file" id="wsfile" accept="image/*" hidden>
+    <div class="row"><label for="wsrm">Remove white background</label><input type="checkbox" id="wsrm"></div>
+    <div class="hint">A PNG with a transparent background looks best.</div>
+   </div>
+   <div id="wstxtbox" hidden>
+    <label class="hint" for="wstxt">Your text</label><input class="txt" id="wstxt" maxlength="60" placeholder="© Your Name">
+    <label class="hint" for="wstc">Text color</label><select class="txt" id="wstc"><option value="white">White</option><option value="black">Black</option></select>
+   </div>
+   <label class="sl"><span>Opacity<b id="wsov">40%</b></span><input type="range" id="wso" min="10" max="100" value="40"></label>
+   <label class="sl"><span>Size<b id="wssv">14%</b></span><input type="range" id="wss" min="5" max="40" value="14"></label>
+   <label class="hint" for="wspos">Corner mark position</label>
+   <select class="txt" id="wspos"><option value="br">Bottom right</option><option value="bl">Bottom left</option><option value="tr">Top right</option><option value="tl">Top left</option><option value="cc">Center</option></select>
+   <div class="hint">Your choices are remembered on this computer.</div>
+   <button class="btn pri" id="wsdone">Done</button>
+   <button class="btn" id="wsreset">Reset to default</button>
+  </div>
  </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -380,15 +415,55 @@ const fname=i=>{
  const pre=$('#pre').value.replace(/[\\/:*?"<>|]/g,'').trim(),n=String(photos.length);
  return pre+($('#pad').checked?String(i+1).padStart(n.length,'0'):String(i+1))+'.jpg';
 };
+const WSKEY='mypics.watermark.v1',WSD={src:'logo',text:'',tc:'white',rm:false,o:40,s:14,pos:'br'};
+const WS={...WSD,orig:null,img:null,data:null};
+let tcache=null;
+function textWM(){
+ const k=WS.text+'|'+WS.tc;if(tcache&&tcache.k===k)return tcache.c;
+ const c=document.createElement('canvas'),x=c.getContext('2d'),f='700 120px Manrope,"Segoe UI",system-ui,sans-serif',white=WS.tc==='white';
+ x.font=f;c.width=Math.ceil(x.measureText(WS.text).width)+80;c.height=220;
+ x.font=f;x.textAlign='center';x.textBaseline='middle';
+ x.shadowColor=white?'rgba(0,0,0,.6)':'rgba(255,255,255,.6)';x.shadowBlur=12;
+ x.fillStyle=white?'#fff':'#000';x.fillText(WS.text,c.width/2,110);
+ tcache={k,c};return c;
+}
+function buildImg(){
+ const o=WS.orig;if(!o){WS.img=null;return}
+ const c=document.createElement('canvas');c.width=o.width;c.height=o.height;
+ const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(o,0,0);
+ if(WS.rm){
+  const d=x.getImageData(0,0,c.width,c.height),p=d.data;
+  for(let i=0;i<p.length;i+=4){
+   const a=(255-Math.min(p[i],p[i+1],p[i+2]))/255;
+   if(a<.004){p[i+3]=0;continue}
+   for(let k=0;k<3;k++)p[i+k]=Math.max(0,Math.min(255,255-(255-p[i+k])/a));
+   p[i+3]*=a;
+  }
+  x.putImageData(d,0,0);
+ }
+ WS.img=c;
+}
+function wmEl(){
+ if(WS.src==='logo')return WM.complete&&WM.naturalWidth?WM:null;
+ if(WS.src==='image')return WS.img;
+ if(WS.src==='text')return WS.text.trim()?textWM():null;
+ return null;
+}
 function stamp(c,mode){
- if(mode==='none'||!WM.complete||!WM.naturalWidth)return;
- const x=c.getContext('2d'),W=c.width,H=c.height,r=WM.naturalHeight/WM.naturalWidth;
- x.save();x.globalAlpha=.4;
- if(mode==='corner'){const w=W*.14,m=W*.03;x.drawImage(WM,W-w-m,H-w*r-m,w,w*r)}
- else{
-  const w=Math.max(W,H)*.16,h=w*r,sx=w*1.7,sy=h*1.5,n=Math.ceil(Math.hypot(W,H)/Math.min(sx,sy)/2)+1;
+ const el=wmEl();
+ if(mode==='none'||!el)return;
+ const ew=el.naturalWidth||el.width,eh=el.naturalHeight||el.height,r=eh/ew;
+ const x=c.getContext('2d'),W=c.width,H=c.height;
+ x.save();x.globalAlpha=WS.o/100;
+ if(mode==='corner'){
+  let w=W*WS.s/100;if(w*r>H*.6)w=H*.6/r;
+  const h=w*r,m=Math.min(W,H)*.03,p=WS.pos;
+  x.drawImage(el,p[1]==='l'?m:p[1]==='r'?W-w-m:(W-w)/2,p[0]==='t'?m:p[0]==='b'?H-h-m:(H-h)/2,w,h);
+ }else{
+  const wide=r<.6,w=Math.max(W,H)*(WS.s/14)*(wide?.3:.16),h=w*r,sx=w*(wide?1.3:1.7),sy=Math.max(h*(wide?2.6:1.5),w*.3);
+  const n=Math.min(40,Math.ceil(Math.hypot(W,H)/Math.min(sx,sy)/2)+1);
   x.translate(W/2,H/2);x.rotate(-.44);
-  for(let a=-n;a<=n;a++)for(let b=-n;b<=n;b++)x.drawImage(WM,b*sx+(a&1?sx/2:0)-w/2,a*sy-h/2,w,h);
+  for(let a=-n;a<=n;a++)for(let b=-n;b<=n;b++)x.drawImage(el,b*sx+(a&1?sx/2:0)-w/2,a*sy-h/2,w,h);
  }
  x.restore();
 }
@@ -423,7 +498,11 @@ async function saveSet(sets,suffix){
 const saveZip=()=>saveSet([['Clean','none'],['Watermarked','corner']],'');
 const saveProof=()=>saveSet([['','tile']],' preview');
 const SV={zip:saveZip,prev:saveProof,one:saveOne};
-document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>SV[b.dataset.save]());
+document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{
+ const k=b.dataset.save;
+ if((k==='zip'||k==='prev'||(k==='one'&&wmMode()!=='none'))&&!wmEl()){toast('Set up a watermark first.');openWS();return}
+ SV[k]();
+});
 $('#exp').onclick=()=>{if(!cur){toast('Open a photo to preview it.');return}preview(photos.indexOf(cur))};
 $('#prev').onclick=()=>preview((pv+photos.length-1)%photos.length);
 $('#next').onclick=()=>preview((pv+1)%photos.length);
@@ -497,6 +576,73 @@ cv.addEventListener('pointermove',e=>{
  pan=[nx,ny];schedule();
 });
 ['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>{pan=null}));
+let wsMode='corner',wsRaf=0;
+function wsSave(){try{localStorage.setItem(WSKEY,JSON.stringify({src:WS.src,text:WS.text,tc:WS.tc,rm:WS.rm,o:WS.o,s:WS.s,pos:WS.pos,data:WS.data}))}catch(e){}}
+function wsLoad(){
+ try{
+  const j=JSON.parse(localStorage.getItem(WSKEY)||'null');if(!j)return;
+  const n=(v,a,b,d)=>typeof v==='number'?Math.max(a,Math.min(b,v)):d;
+  WS.src=['logo','image','text','none'].includes(j.src)?j.src:'logo';
+  WS.text=String(j.text||'').slice(0,60);WS.tc=j.tc==='black'?'black':'white';WS.rm=!!j.rm;
+  WS.o=n(j.o,10,100,40);WS.s=n(j.s,5,40,14);WS.pos=['br','bl','tr','tl','cc'].includes(j.pos)?j.pos:'br';
+  if(j.data){
+   WS.data=j.data;const im=new Image();
+   im.onload=()=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);WS.orig=c;buildImg()};
+   im.src=j.data;
+  }else if(WS.src==='image')WS.src='logo';
+ }catch(e){}
+}
+function syncWS(){
+ $('#wssrc').value=WS.src;$('#wsimgbox').hidden=WS.src!=='image';$('#wstxtbox').hidden=WS.src!=='text';
+ $('#wsrm').checked=WS.rm;$('#wstxt').value=WS.text;$('#wstc').value=WS.tc;
+ $('#wso').value=WS.o;$('#wsov').textContent=WS.o+'%';$('#wss').value=WS.s;$('#wssv').textContent=WS.s+'%';$('#wspos').value=WS.pos;
+ $('#wsup').textContent=WS.orig?'Choose a different image…':'Choose image…';
+ $('#wsc').classList.toggle('on',wsMode==='corner');$('#wst').classList.toggle('on',wsMode==='tile');
+}
+function wsRender(){
+ wsRaf=0;if($('#wsmodal').hidden)return;
+ let c;
+ if(photos.length)c=shot(cur||photos[0],900,wsMode);
+ else{
+  c=document.createElement('canvas');c.width=900;c.height=600;
+  const x=c.getContext('2d'),g=x.createLinearGradient(0,0,900,600);
+  g.addColorStop(0,'#2b4f8f');g.addColorStop(.6,'#f2a65a');g.addColorStop(1,'#f7d9a0');
+  x.fillStyle=g;x.fillRect(0,0,900,600);stamp(c,wsMode);
+ }
+ $('#wsimg').src=c.toDataURL('image/jpeg',.85);
+}
+const wsGo=()=>{wsSave();if(!wsRaf)wsRaf=requestAnimationFrame(wsRender)};
+function openWS(){syncWS();$('#wsmodal').hidden=false;wsRender()}
+function setWMFile(f){
+ const im=new Image();
+ im.onload=()=>{
+  const iw=im.naturalWidth||512,ih=im.naturalHeight||512,k=Math.min(1,800/Math.max(iw,ih));
+  const c=document.createElement('canvas');c.width=Math.max(1,Math.round(iw*k));c.height=Math.max(1,Math.round(ih*k));
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,c.width,c.height);
+  const d=x.getImageData(0,0,c.width,c.height).data;let alpha=false;
+  for(let i=3;i<d.length;i+=4)if(d[i]<250){alpha=true;break}
+  WS.orig=c;WS.rm=!alpha;WS.src='image';WS.data=c.toDataURL('image/png');
+  buildImg();syncWS();wsGo();
+ };
+ im.onerror=()=>toast('That image can’t be read. Try a PNG, JPEG or WebP file.');
+ im.src=URL.createObjectURL(f);
+}
+$('#wsopen').onclick=openWS;
+$('#wsdone').onclick=()=>{$('#wsmodal').hidden=true};
+$('#wssrc').onchange=e=>{WS.src=e.target.value;if(WS.src==='image'&&!WS.orig)$('#wsfile').click();syncWS();wsGo()};
+$('#wsup').onclick=()=>$('#wsfile').click();
+$('#wsfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)setWMFile(f)};
+$('#wsrm').onchange=e=>{WS.rm=e.target.checked;buildImg();wsGo()};
+$('#wstxt').oninput=e=>{WS.text=e.target.value;wsGo()};
+$('#wstc').onchange=e=>{WS.tc=e.target.value;wsGo()};
+$('#wso').oninput=e=>{WS.o=+e.target.value;$('#wsov').textContent=WS.o+'%';wsGo()};
+$('#wss').oninput=e=>{WS.s=+e.target.value;$('#wssv').textContent=WS.s+'%';wsGo()};
+$('#wspos').onchange=e=>{WS.pos=e.target.value;wsGo()};
+$('#wsc').onclick=()=>{wsMode='corner';syncWS();wsGo()};
+$('#wst').onclick=()=>{wsMode='tile';syncWS();wsGo()};
+$('#wsreset').onclick=()=>{Object.assign(WS,WSD,{orig:null,img:null,data:null});tcache=null;syncWS();wsGo()};
+addEventListener('keydown',e=>{if(e.key==='Escape'){$('#wsmodal').hidden=true;$('#modal').hidden=true}});
+wsLoad();
 draw();
 </script>
 </body>
