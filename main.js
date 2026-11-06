@@ -1,20 +1,31 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 let base = null;
 
+// Colors for the Windows minimize/maximize/close buttons, matched to the app background
+const bar = () => nativeTheme.shouldUseDarkColors
+  ? { color: '#0b0d12', symbolColor: '#e9eef6', height: 38 }
+  : { color: '#eef1f6', symbolColor: '#111a2b', height: 38 };
+
 function createWindow() {
+  const mac = process.platform === 'darwin';
   const win = new BrowserWindow({
-    width: 1440, height: 920, minWidth: 1000, minHeight: 640,
-    title: 'My Pics', backgroundColor: '#0b0c0f',
+    width: 1440, height: 920, minWidth: 820, minHeight: 560,
+    title: 'My Pics', backgroundColor: bar().color,
     icon: path.join(__dirname, 'build', 'icon.ico'),
+    titleBarStyle: 'hidden',
+    ...(mac ? { trafficLightPosition: { x: 14, y: 12 } } : { titleBarOverlay: bar() }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true, sandbox: true, nodeIntegration: false
     }
   });
   win.loadFile('index.html');
+  nativeTheme.on('updated', () => {
+    if (!mac && !win.isDestroyed()) win.setTitleBarOverlay(bar());
+  });
 }
 
 ipcMain.handle('save-file', async (e, name, data) => {
