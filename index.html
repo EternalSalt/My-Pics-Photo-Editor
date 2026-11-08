@@ -103,6 +103,12 @@ details[open]>summary::after{transform:rotate(-135deg)}
 @media (max-width:1100px){.app{grid-template-columns:212px 252px minmax(0,1fr) 172px}}
 @media (max-width:900px){html,body{height:auto}.app{grid-template-columns:minmax(0,1fr);grid-template-rows:none;height:auto}.center{order:-1}.stage{height:58vh}.thumbs{flex-direction:row;overflow-x:auto}.th{flex:0 0 120px}}
 @media (max-width:760px){.ws{grid-template-columns:minmax(0,1fr)}}
+select.txt option,select.txt optgroup{background:#fff;color:#111a2b}
+select.txt optgroup{color:#3d4960;font-weight:700}
+.crop{display:flex;align-items:center;gap:8px}
+.mini .txt{width:auto;padding:6px 8px}
+.crop .num{width:58px;padding:6px;text-align:center}
+#crcust{display:flex;align-items:center;gap:6px;color:var(--mute)}
 #spin{position:fixed;left:0;top:0;z-index:100;display:flex;align-items:center;gap:8px;pointer-events:none;will-change:transform}
 #spin img{width:34px;height:34px;animation:spin .9s linear infinite;filter:drop-shadow(0 2px 6px rgba(0,0,0,.45))}
 #spin span{padding:3px 10px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
@@ -160,13 +166,15 @@ body{padding-top:38px}
 </aside>
 
 <aside class="panel" aria-label="Adjust">
- <div class="phead"><h2>Adjust</h2><button class="link" id="reset">Reset all</button></div>
+ <div class="phead"><h2>Adjust</h2><button class="link" id="reset">Reset edits</button></div>
  <details open>
   <summary>Auto adjust</summary>
+  <label class="hint" for="scene">Scene type</label>
+  <select class="txt" id="scene" style="margin-bottom:8px"><option value="auto">General</option><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option><option value="candid">Candids</option><option value="studio">Studio (lit)</option></select>
   <button class="btn alt" id="auto"><svg class="i"><use href="#i-wand"/></svg>Auto adjust this photo</button>
   <button class="btn" id="autoall">Auto adjust all photos</button>
   <div class="row"><label for="autoon">Auto adjust on open</label><input type="checkbox" id="autoon" checked></div>
-  <div class="hint">A starting point. Check each photo and tweak below.</div>
+  <div class="hint">A starting point. Choose the scene type first, then check each photo and tweak below.</div>
  </details>
  <details open>
   <summary>Light and color</summary>
@@ -211,13 +219,23 @@ body{padding-top:38px}
   </div>
   <label class="mini"><span>Straighten</span><input type="range" id="ang" min="-15" max="15" step="0.1" value="0"><b id="av">0°</b></label>
   <label class="mini" title="Zoom in, then drag the photo to move the crop"><span>Zoom</span><input type="range" id="zm" min="100" max="400" step="1" value="100"><b id="zv">100%</b></label>
-  <div id="crops">
-   <button class="btn on" data-ar="0">Original</button>
-   <button class="btn" data-ar="1">1:1</button>
-   <button class="btn" data-ar="0.8">4:5</button>
-   <button class="btn" data-ar="1.5">3:2</button>
-   <button class="btn" data-ar="1.7778">16:9</button>
+  <div class="crop">
+   <label class="mini"><span>Crop</span>
+    <select class="txt" id="crsel" aria-label="Crop shape">
+     <option value="0">Original</option>
+     <option value="1">1:1 square</option>
+     <optgroup label="Landscape">
+      <option value="1.5">3:2</option><option value="1.3333">4:3</option><option value="1.25">5:4 (8×10)</option><option value="1.4">7:5 (5×7)</option><option value="1.7778">16:9</option><option value="2">2:1</option><option value="3">3:1 panorama</option><option value="1.4142">A4 paper</option>
+     </optgroup>
+     <optgroup label="Portrait">
+      <option value="0.6667">2:3 (4×6)</option><option value="0.75">3:4</option><option value="0.8">4:5 (Instagram)</option><option value="0.7143">5:7</option><option value="0.5625">9:16 (stories)</option><option value="0.5">1:2</option><option value="0.7071">A4 paper</option>
+     </optgroup>
+     <option value="custom">Custom…</option>
+    </select>
+   </label>
+   <span id="crcust" hidden><input class="txt num" id="crw" type="number" min="1" max="99" step="any" value="4" aria-label="Crop width"> : <input class="txt num" id="crh" type="number" min="1" max="99" step="any" value="3" aria-label="Crop height"></span>
   </div>
+  <button class="btn" id="resetcrop" title="Reset crop, zoom, rotation and flip"><svg class="i"><use href="#i-rl"/></svg>Reset crop</button>
  </div>
 </main>
 
@@ -338,7 +356,11 @@ function sync(){
  document.querySelectorAll('#sliders input').forEach(i=>{i.value=p.adj[i.dataset.k];$('#v_'+i.dataset.k).textContent=i.value});
  $('#ang').value=p.angle;$('#av').textContent=p.angle+'°';$('#bw').checked=!!p.bw;
  $('#zm').value=Math.round((p.zoom||1)*100);$('#zv').textContent=$('#zm').value+'%';syncCur();
- document.querySelectorAll('[data-ar]').forEach(b=>b.classList.toggle('on',+b.dataset.ar===p.crop));
+ {const sel=$('#crsel');let m='custom';
+  if(!p.crop)m='0';else for(const o of sel.options){if(o.value!=='custom'&&o.value!=='0'&&Math.abs(+o.value-p.crop)<.002){m=o.value;break}}
+  sel.value=m;$('#crcust').hidden=m!=='custom';
+  if(m==='custom'){$('#crw').value=p.cw||Math.round(p.crop*100);$('#crh').value=p.ch||100}
+ }
  $('#loc').textContent=p.loc+' – '+photos.length+(photos.length>1?' photos':' photo');
  document.querySelectorAll('.th').forEach((b,i)=>b.classList.toggle('on',photos[i]===p));
 }
@@ -381,19 +403,33 @@ function stats(t){
  let R=0,G=0,B=0,S=0;
  for(let i=0,j=0;i<d.length;i+=4,j++){const r=d[i],g=d[i+1],b=d[i+2];R+=r;G+=g;B+=b;S+=Math.max(r,g,b)-Math.min(r,g,b);L[j]=.299*r+.587*g+.114*b}
  L.sort((a,b)=>a-b);
- const q=f=>L[Math.floor(f*(n-1))],cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const q=f=>L[Math.floor(f*(n-1))];
  R/=n;G/=n;B/=n;
- const mean=.299*R+.587*G+.114*B,lo=q(.01),hi=q(.99),p5=q(.05),p95=q(.95),ms=S/n/255;
+ return{mean:.299*R+.587*G+.114*B,lo:q(.01),hi:q(.99),p5:q(.05),p95:q(.95),p99:q(.99),R,G,B,ms:S/n/255};
+}
+const SCENES={
+ auto:   {t:120,up:1.2,dn:1.2,wb:.5, wbm:15,tm:10,cg:60,cm:30,cn:-10,sg:.9,sm:40,hg:2,  hm:40,sb:8, sx:150,sa:25},
+ outdoor:{t:125,up:1,  dn:1.2,wb:.4, wbm:12,tm:8, cg:60,cm:28,cn:-8, sg:.9,sm:45,hg:2.2,hm:45,sb:12,sx:150,sa:28},
+ indoor: {t:115,up:1.4,dn:.8, wb:.7, wbm:25,tm:12,cg:40,cm:20,cn:-10,sg:1.1,sm:45,hg:1.5,hm:30,sb:6, sx:100,sa:20},
+ candid: {t:118,up:1,  dn:1,  wb:.35,wbm:10,tm:6, cg:45,cm:22,cn:-8, sg:.8,sm:35,hg:1.8,hm:35,sb:4, sx:80, sa:14},
+ studio: {t:0,  up:.25,dn:.5, wb:0,  wbm:0, tm:0, cg:25,cm:10,cn:0,  sg:.3,sm:10,hg:1,  hm:10,sb:0, sx:0,  sa:0}
+};
+function autoSet(m,scene){
+ const c=SCENES[scene]||SCENES.auto,cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+ let stops=c.t?Math.log2(c.t/Math.max(m.mean,20)):0;
+ const room=Math.log2(252/Math.max(m.p99,1));
+ stops=cl(stops,-c.dn,Math.min(c.up,room));
  return{
-  exposure:Math.round(cl(Math.log2(120/Math.max(mean,20))*48,-60,60)),
-  contrast:Math.round(cl((235/Math.max(hi-lo,70)-1)*60,-10,30)),
-  shadows:Math.round(cl((50-p5)*.9,0,40)),
-  highlights:-Math.round(cl((p95-228)*2,0,40)),
-  temp:Math.round(cl((B-R)*.67,-15,15)),
-  tint:Math.round(cl((G-(R+B)/2)*1.33,-10,10)),
-  saturation:Math.round(cl((.2-ms)*150+8,0,25))
+  exposure:Math.round(stops*60*.85),
+  contrast:Math.round(cl((235/Math.max(m.hi-m.lo,70)-1)*c.cg,c.cn,c.cm)),
+  shadows:Math.round(cl((50-m.p5)*c.sg,0,c.sm)),
+  highlights:-Math.round(cl((m.p95-228)*c.hg,0,c.hm)),
+  temp:Math.round(cl((m.B-m.R)*1.34*c.wb,-c.wbm,c.wbm)),
+  tint:Math.round(cl((m.G-(m.R+m.B)/2)*2.66*c.wb,-c.tm,c.tm)),
+  saturation:Math.round(cl((.2-m.ms)*c.sx+c.sb,0,c.sa))
  };
 }
+const autoApply=p=>Object.assign(p.adj,autoSet(p.m,$('#scene').value));
 let batch=0;
 const load=f=>new Promise(res=>{
  const im=new Image();
@@ -401,9 +437,9 @@ const load=f=>new Promise(res=>{
   const t=document.createElement('canvas'),k=240/Math.max(im.naturalWidth,im.naturalHeight);
   t.width=Math.round(im.naturalWidth*k)||1;t.height=Math.round(im.naturalHeight*k)||1;
   t.getContext('2d').drawImage(im,0,0,t.width,t.height);
-  const p={name:f.name,img:im,thumb:t.toDataURL('image/jpeg',.7),adj:zero(),rot:0,flip:0,angle:0,crop:0,bw:0,auto:stats(t),
+  const p={name:f.name,img:im,thumb:t.toDataURL('image/jpeg',.7),adj:zero(),rot:0,flip:0,angle:0,crop:0,bw:0,m:stats(t),
    loc:f.webkitRelativePath?'Folder: '+f.webkitRelativePath.split('/')[0]:'Opened from this device'};
-  if($('#autoon').checked)Object.assign(p.adj,p.auto);
+  if($('#autoon').checked)autoApply(p);
   res(p);
  };
  im.onerror=()=>{toast('“'+f.name+'” can’t be read here. Try a JPEG, PNG or WebP copy.');res(null)};
@@ -439,12 +475,19 @@ $('#sliders').addEventListener('dblclick',e=>{
 });
 $('#bw').onchange=e=>{if(cur){cur.bw=e.target.checked?1:0;schedule()}};
 $('#grid').onchange=e=>{grid=e.target.checked;schedule()};
-$('#reset').onclick=()=>{if(cur){Object.assign(cur,{adj:zero(),rot:0,flip:0,angle:0,crop:0,bw:0,zoom:1,px:0,py:0});sync();draw()}};
+$('#reset').onclick=()=>{if(cur){Object.assign(cur,{adj:zero(),bw:0});sync();draw()}};
+$('#resetcrop').onclick=()=>{if(cur){Object.assign(cur,{rot:0,flip:0,angle:0,crop:0,zoom:1,px:0,py:0});sync();draw()}};
 $('#rl').onclick=()=>{if(cur){cur.rot=(cur.rot+3)%4;draw()}};
 $('#rr').onclick=()=>{if(cur){cur.rot=(cur.rot+1)%4;draw()}};
 $('#fl').onclick=()=>{if(cur){cur.flip=cur.flip?0:1;draw()}};
 $('#ang').oninput=e=>{if(cur){cur.angle=+e.target.value;$('#av').textContent=cur.angle+'°';schedule()}};
-$('#crops').onclick=e=>{const b=e.target.closest('[data-ar]');if(b&&cur){cur.crop=+b.dataset.ar;sync();draw()}};
+$('#crsel').onchange=e=>{
+ if(!cur)return;const v=e.target.value;
+ if(v==='custom'){const w=+$('#crw').value||1,h=+$('#crh').value||1;cur.crop=w/h;cur.cw=w;cur.ch=h}else cur.crop=+v;
+ sync();draw();
+};
+const crCust=()=>{if(!cur)return;const w=+$('#crw').value,h=+$('#crh').value;if(w>0&&h>0){cur.crop=w/h;cur.cw=w;cur.ch=h;draw()}};
+$('#crw').oninput=$('#crh').oninput=crCust;
 
 const cmp=$('#cmp');
 ['pointerdown'].forEach(n=>cmp.addEventListener(n,()=>{compare=true;schedule()}));
@@ -561,7 +604,7 @@ addEventListener('keydown',e=>{
  else if(e.key==='ArrowLeft'&&i>0)select(i-1);
  else if(e.key==='g'||e.key==='G'){grid=!grid;$('#grid').checked=grid;schedule()}
 });
-const doAuto=p=>Object.assign(p.adj,p.auto);
+const doAuto=autoApply;
 $('#auto').onclick=()=>{if(cur){doAuto(cur);sync();draw();toast('Auto adjusted. Check it and tweak as needed.')}};
 $('#autoall').onclick=()=>{if(photos.length){photos.forEach(doAuto);sync();draw();toast('Auto adjusted all '+photos.length+' photos.')}};
 const ovUI=on=>{$('#ovctl').hidden=!on;$('#ovadd').textContent=on?'Replace overlay image':'Add overlay image';schedule();syncCur()};
@@ -681,6 +724,12 @@ function setLoading(on,txt){
 addEventListener('pointermove',e=>{mx=e.clientX;my=e.clientY;if(!$('#spin').hidden)moveSpin()},{passive:true});
 addEventListener('dragover',e=>{mx=e.clientX;my=e.clientY},true);
 addEventListener('drop',e=>{mx=e.clientX;my=e.clientY},true);
+try{const s=localStorage.getItem('mypics.scene');if(s&&SCENES[s])$('#scene').value=s}catch(e){}
+$('#scene').onchange=e=>{
+ try{localStorage.setItem('mypics.scene',e.target.value)}catch(_){}
+ const nm=e.target.selectedOptions[0].text;
+ toast(photos.length?'Scene set to '+nm+'. Press Auto adjust to apply it.':'Scene set to '+nm+'. It will be used when you open photos.');
+};
 $('#fold2').onclick=()=>$('#folder').click();
 wsLoad();
 draw();

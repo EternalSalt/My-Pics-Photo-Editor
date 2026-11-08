@@ -1,0 +1,78 @@
+name: Build apps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: dist:win
+            label: windows
+          - os: macos-latest
+            script: dist:mac
+            label: mac
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run ${{ matrix.script }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.label }}
+          path: |
+            dist/My-Pics-Setup-*.exe
+            dist/My-Pics-Portable-*.exe
+            dist/My-Pics-Mac-*.dmg
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: v
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: files
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: My Pics ${{ steps.v.outputs.version }}
+          body: |
+            **Windows:** download My-Pics-Setup-${{ steps.v.outputs.version }}.exe to install, or My-Pics-Portable-${{ steps.v.outputs.version }}.exe to run without installing.
+            If Windows says "Windows protected your PC", click More info, then Run anyway.
+
+            **Mac:** download the .dmg that matches your Mac.
+            - Apple chip (M1 or newer): My-Pics-Mac-${{ steps.v.outputs.version }}-arm64.dmg
+            - Intel: My-Pics-Mac-${{ steps.v.outputs.version }}-x64.dmg
+            Open the .dmg and drag My Pics into Applications. The first time, macOS may block it. Open System Settings, then Privacy & Security, scroll down and click Open Anyway.
+          files: files/*
+          overwrite_files: true
