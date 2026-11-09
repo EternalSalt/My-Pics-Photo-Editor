@@ -41,6 +41,20 @@ Mac
       xattr -cr "/Applications/My Pics.app"
  - Mac files can only be built on GitHub (or on a Mac with  npm run dist:mac ).
 
+Automatic updates
+ - Installed copies check for a new version every time My Pics starts (and every 4 hours).
+ - Windows installer: the update downloads in the background. A card appears with
+   "Restart and update". It also installs by itself the next time the app is closed.
+ - Windows portable app and Mac: a card says a new version is available and the
+   Download button opens your Releases page. (Mac cannot update silently without a
+   paid Apple developer certificate.)
+ - "Check for updates" at the bottom of the left panel checks right away.
+ - To send an update: raise "version" in package.json (for example 1.6.0 to 1.6.1),
+   then commit. GitHub builds it and posts it to Releases. If the number is not
+   raised, installed copies will not see it as new.
+ - Copies installed from an older version (before 1.6.0) do not have the updater yet.
+   They need to install 1.6.0 manually one time. After that, updates are automatic.
+
 Watermark
  - Click Watermark settings to use your own logo (PNG, JPEG or WebP) or your own text.
    Choose opacity, size and position and see it on your photo as you go.

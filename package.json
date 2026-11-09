@@ -1,6 +1,6 @@
 {
   "name": "my-pics",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "My Pics photo editor",
   "main": "main.js",
   "author": "My Pics",
@@ -49,5 +49,8 @@
     "dmg": {
       "artifactName": "My-Pics-Mac-${version}-${arch}.${ext}"
     }
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
   }
 }
