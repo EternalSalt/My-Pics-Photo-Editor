@@ -1,6 +1,6 @@
 {
   "name": "my-pics",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "My Pics photo editor",
   "main": "main.js",
   "author": "My Pics",
@@ -21,6 +21,7 @@
       "main.js",
       "preload.js",
       "index.html",
+      "update-config.json",
       "build/**"
     ],
     "win": {

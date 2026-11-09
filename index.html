@@ -768,7 +768,7 @@ draw();
    case 'ready':ui('Update ready','Version '+ver+' installs when you restart My Pics.','Restart and update',()=>mypics.installUpdate());break;
    case 'manual':ui('Update available','Version '+ver+' is ready to download.','Download',()=>mypics.openRelease());break;
    case 'none':if(s.manual)toast('You’re up to date.');break;
-   case 'error':if(s.manual)toast('Couldn’t check for updates. Check your internet connection.');break;
+   case 'error':if(s.manual)toast('Couldn’t check for updates: '+(s.message||'unknown error'));break;
   }
  });
 })();

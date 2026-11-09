@@ -2,15 +2,17 @@ const { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme, shell, net } = r
 const path = require('path');
 const fs = require('fs');
 let autoUpdater = null;
-try { autoUpdater = require('electron-updater').autoUpdater; } catch (e) { /* updates simply stay off */ }
+try { autoUpdater = require('electron-updater').autoUpdater; } catch (e) { /* falls back to the notice-only check */ }
 
 let base = null;
 let win = null;
 let manualCheck = false;
+let downloading = false;
 
-// Windows installer builds update themselves. Mac and the portable Windows app only get a "new version" notice.
+// Windows installer builds can update themselves. Mac and the portable Windows app get a "new version" notice.
 const portable = !!process.env.PORTABLE_EXECUTABLE_DIR;
 const selfUpdate = app.isPackaged && process.platform === 'win32' && !portable && !!autoUpdater;
+const msg = (e) => String((e && e.message) || e).split('\n')[0].slice(0, 160);
 
 // Colors for the Windows minimize/maximize/close buttons, matched to the app background
 const bar = () => nativeTheme.shouldUseDarkColors
@@ -41,7 +43,12 @@ const send = (s) => {
   if (win && !win.isDestroyed()) win.webContents.send('update-status', { ...s, manual: manualCheck });
 };
 
+// Which GitHub repository to check. The build writes update-config.json; app-update.yml is the backup.
 function repoInfo() {
+  try {
+    const c = JSON.parse(fs.readFileSync(path.join(__dirname, 'update-config.json'), 'utf8'));
+    if (c.owner && c.repo) return { owner: c.owner, repo: c.repo };
+  } catch (e) { /* try the next one */ }
   try {
     const t = fs.readFileSync(path.join(process.resourcesPath, 'app-update.yml'), 'utf8');
     const owner = (t.match(/^owner:\s*(\S+)/m) || [])[1];
@@ -62,11 +69,12 @@ const newer = (a, b) => {
 
 async function checkViaGitHub() {
   const r = repoInfo();
-  if (!r) throw new Error('No update source configured');
+  if (!r) throw new Error('This copy was built without update settings');
   const res = await net.fetch(`https://api.github.com/repos/${r.owner}/${r.repo}/releases/latest`, {
     headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'My-Pics' }
   });
-  if (!res.ok) throw new Error('GitHub returned ' + res.status);
+  if (res.status === 404) throw new Error(`No public release found at github.com/${r.owner}/${r.repo} (is the repository public?)`);
+  if (!res.ok) throw new Error('GitHub answered ' + res.status);
   const j = await res.json();
   const v = String(j.tag_name || '').replace(/^v/, '');
   if (newer(v, app.getVersion())) send({ state: 'manual', version: v });
@@ -75,23 +83,24 @@ async function checkViaGitHub() {
 
 async function checkForUpdates() {
   if (!app.isPackaged) { send({ state: 'none' }); return; }
-  try {
-    if (selfUpdate) await autoUpdater.checkForUpdates();
-    else await checkViaGitHub();
-  } catch (e) {
-    if (!selfUpdate) send({ state: 'error', message: String((e && e.message) || e) });
+  let first = '';
+  if (selfUpdate) {
+    try { await autoUpdater.checkForUpdates(); return; }
+    catch (e) { first = msg(e); }   // fall back to the notice-only check below
   }
+  try { await checkViaGitHub(); }
+  catch (e) { send({ state: 'error', message: msg(e) + (first ? ' (updater: ' + first + ')' : '') }); }
 }
 
 function setupUpdates() {
   if (selfUpdate) {
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
-    autoUpdater.on('update-available', (i) => send({ state: 'downloading', version: i.version, percent: 0 }));
+    autoUpdater.on('update-available', (i) => { downloading = true; send({ state: 'downloading', version: i.version, percent: 0 }); });
     autoUpdater.on('update-not-available', () => send({ state: 'none' }));
     autoUpdater.on('download-progress', (p) => send({ state: 'downloading', percent: Math.round(p.percent) }));
-    autoUpdater.on('update-downloaded', (i) => send({ state: 'ready', version: i.version }));
-    autoUpdater.on('error', (e) => send({ state: 'error', message: String((e && e.message) || e) }));
+    autoUpdater.on('update-downloaded', (i) => { downloading = false; send({ state: 'ready', version: i.version }); });
+    autoUpdater.on('error', (e) => { if (downloading) { downloading = false; send({ state: 'error', message: msg(e) }); } });
   }
   if (!app.isPackaged) return;
   setTimeout(checkForUpdates, 6000);

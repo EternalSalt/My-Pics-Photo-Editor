@@ -30,17 +30,26 @@ jobs:
         with:
           node-version: 22
 
+      - name: Tell the app which repository to check for updates
+        shell: bash
+        run: echo "{\"owner\":\"${GITHUB_REPOSITORY_OWNER}\",\"repo\":\"${GITHUB_REPOSITORY#*/}\"}" > update-config.json
+
       - name: Install
         run: npm install
 
       - name: Build
-        run: npm run ${{ matrix.script }}
+        shell: bash
+        run: |
+          REPO="${GITHUB_REPOSITORY#*/}"
+          npm run ${{ matrix.script }} -- -c.publish.provider=github -c.publish.owner="${GITHUB_REPOSITORY_OWNER}" -c.publish.repo="${REPO}"
 
       - uses: actions/upload-artifact@v4
         with:
           name: app-${{ matrix.label }}
           path: |
             dist/My-Pics-Setup-*.exe
+            dist/My-Pics-Setup-*.exe.blockmap
+            dist/latest.yml
             dist/My-Pics-Portable-*.exe
             dist/My-Pics-Mac-*.dmg
           if-no-files-found: error
@@ -61,6 +70,21 @@ jobs:
           path: files
           merge-multiple: true
 
+      - name: Make sure the update info file exists
+        run: |
+          if [ ! -f files/latest.yml ]; then
+            EXE=$(ls files/My-Pics-Setup-*.exe 2>/dev/null | head -n1)
+            if [ -n "$EXE" ]; then
+              NAME=$(basename "$EXE")
+              SHA=$(openssl dgst -sha512 -binary "$EXE" | base64 -w0)
+              SIZE=$(stat -c%s "$EXE")
+              DATE=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+              printf 'version: %s\nfiles:\n  - url: %s\n    sha512: %s\n    size: %s\npath: %s\nsha512: %s\nreleaseDate: %s\n' "${{ steps.v.outputs.version }}" "$NAME" "$SHA" "$SIZE" "$NAME" "$SHA" "'$DATE'" > files/latest.yml
+              echo "Created latest.yml"
+            fi
+          fi
+          ls -la files
+
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
@@ -69,6 +93,7 @@ jobs:
           body: |
             **Windows:** download My-Pics-Setup-${{ steps.v.outputs.version }}.exe to install, or My-Pics-Portable-${{ steps.v.outputs.version }}.exe to run without installing.
             If Windows says "Windows protected your PC", click More info, then Run anyway.
+            Installed copies update themselves from now on.
 
             **Mac:** download the .dmg that matches your Mac.
             - Apple chip (M1 or newer): My-Pics-Mac-${{ steps.v.outputs.version }}-arm64.dmg

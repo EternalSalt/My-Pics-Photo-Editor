@@ -52,6 +52,10 @@ Automatic updates
  - To send an update: raise "version" in package.json (for example 1.6.0 to 1.6.1),
    then commit. GitHub builds it and posts it to Releases. If the number is not
    raised, installed copies will not see it as new.
+ - If "Check for updates" shows an error, the message now says why. A quick test: open
+   https://github.com/YOUR-USERNAME/my-pics/releases/latest/download/latest.yml in a browser.
+   If you see a text file, updates are wired up. If you see "Not found", the release is
+   missing that file or the repository is not public.
  - Copies installed from an older version (before 1.6.0) do not have the updater yet.
    They need to install 1.6.0 manually one time. After that, updates are automatic.
 
