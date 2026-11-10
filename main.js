@@ -122,7 +122,7 @@ ipcMain.handle('open-release', () => {
 ipcMain.handle('save-file', async (e, name, data) => {
   const w = BrowserWindow.fromWebContents(e.sender);
   const r = await dialog.showSaveDialog(w, {
-    defaultPath: String(name), filters: [{ name: 'JPEG image', extensions: ['jpg'] }]
+    defaultPath: String(name), filters: [{ name: 'Image', extensions: ['jpg', 'png'] }]
   });
   if (r.canceled || !r.filePath) return { ok: false };
   await fs.promises.writeFile(r.filePath, Buffer.from(data));
