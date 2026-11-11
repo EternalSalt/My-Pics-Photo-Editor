@@ -295,11 +295,11 @@ body{padding-top:38px}
   <label class="hint" for="pre">File name start (optional)</label>
   <input class="txt" id="pre" placeholder="e.g. Smith-">
   <div class="row"><label for="pad">Pad numbers (01, 02…)</label><input type="checkbox" id="pad"></div>
-  <div class="hint">Files are numbered 1, 2, 3… in the order shown on the right. Saving creates a folder with Clean and Watermarked subfolders.</div>
+  <div class="hint">Files are numbered 1, 2, 3… in the order shown on the right. Saving creates an Edits folder and a Watermark folder in the place you choose.</div>
   <label class="hint" for="wmode">Watermark for preview and single save</label>
   <select class="txt" id="wmode"><option value="corner">Small corner mark</option><option value="tile">Over the whole image</option><option value="none">None</option></select>
   <button class="btn" id="wsopen"><svg class="i"><use href="#i-drop"/></svg>Watermark settings…</button>
-  <button class="btn alt" data-save="zip"><svg class="i"><use href="#i-save"/></svg>Save all (clean + watermarked)</button>
+  <button class="btn alt" data-save="zip"><svg class="i"><use href="#i-save"/></svg>Save all (edits + watermark)</button>
   <button class="btn" data-save="prev"><svg class="i"><use href="#i-layers"/></svg>Save all as preview (watermark over whole image)</button>
   <button class="btn" data-save="one"><svg class="i"><use href="#i-save"/></svg>Save this photo</button>
   <button class="btn" id="expclose">Close</button>
@@ -310,7 +310,7 @@ body{padding-top:38px}
   <img id="outimg" alt="Edited photo">
   <p id="outname"></p>
   <div class="bar"><button class="btn" id="prev">Previous</button><select class="txt" id="wmode2" style="width:auto"><option value="corner">Small watermark</option><option value="tile">Whole-image watermark</option><option value="none">No watermark</option></select><button class="btn" id="next">Next</button></div>
-  <div class="bar"><button class="btn alt" data-save="one">Save this photo</button><button class="btn pri" data-save="zip">Save all (clean + watermarked)</button><button class="btn" data-save="prev">Save all as preview</button><button class="btn" id="close">Close</button></div>
+  <div class="bar"><button class="btn alt" data-save="one">Save this photo</button><button class="btn pri" data-save="zip">Save all (edits + watermark)</button><button class="btn" data-save="prev">Save all as preview</button><button class="btn" id="close">Close</button></div>
  </div>
 </div>
 <div class="modal" id="wsmodal" hidden>
@@ -674,10 +674,9 @@ async function saveOne(){
  const r=await mypics.saveFile(fname(i),await toBuf(shot(photos[i],4000,wmMode())));
  if(r&&r.ok)toast('Saved '+fname(i)+'.');
 }
-async function saveSet(sets,suffix){
+async function saveSet(sets){
  if(!photos.length){toast('Open photos first.');return}
- const pre=$('#pre').value.replace(/[\\/:*?"<>|]/g,'').replace(/[-_ ]+$/,'').trim()||'My Pics';
- const r=await mypics.beginSave(pre+suffix);if(!r||!r.ok)return;
+ const r=await mypics.beginSave(sets.map(s=>s[0]));if(!r||!r.ok)return;
  const total=photos.length*sets.length;let n=0;
  for(let i=0;i<photos.length;i++)for(const[dir,mode]of sets){
   toast('Saving '+(++n)+' of '+total+'…');
@@ -685,8 +684,8 @@ async function saveSet(sets,suffix){
  }
  toast('Saved '+photos.length+' numbered photos to '+r.dir);
 }
-const saveZip=()=>saveSet([['Clean','none'],['Watermarked','corner']],'');
-const saveProof=()=>saveSet([['','tile']],' preview');
+const saveZip=()=>saveSet([['Edits','none'],['Watermark','corner']]);
+const saveProof=()=>saveSet([['Preview','tile']]);
 const SV={zip:saveZip,prev:saveProof,one:saveOne};
 document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{
  const k=b.dataset.save;
@@ -1133,8 +1132,11 @@ draw();
   if(s.version)ver=s.version;
   switch(s.state){
    case 'downloading':ui('Downloading update','Version '+ver+' is downloading in the background.',null,null,s.percent||0);break;
-   case 'ready':ui('Update ready','Version '+ver+' installs when you restart My Pics.','Restart and update',()=>mypics.installUpdate());break;
-   case 'manual':ui('Update available','Version '+ver+' is ready to download.','Download',()=>mypics.openRelease());break;
+   case 'ready':
+    if(s.mode==='mac')ui('Update downloaded','Version '+ver+' is ready. Open it, then drag My Pics into Applications.','Open installer',()=>mypics.installUpdate());
+    else ui('Update ready','Version '+ver+' installs when you restart My Pics, or the next time you close it.','Restart and update',()=>mypics.installUpdate());
+    break;
+   case 'manual':ui('Update available',s.message?'Version '+ver+' is available, but it couldn’t download on its own ('+s.message+').':'Version '+ver+' is ready to download.','Open download page',()=>mypics.openRelease());break;
    case 'none':if(s.manual)toast('You’re up to date.');break;
    case 'error':if(s.manual)toast('Couldn’t check for updates: '+(s.message||'unknown error'));break;
   }

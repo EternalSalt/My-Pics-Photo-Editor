@@ -17,23 +17,47 @@ OPTION A: Build it on GitHub (nothing to install on your computer)
       https://github.com/YOUR-USERNAME/my-pics/releases/latest
 
  Publishing a new version later: change "version" in package.json (for example
- to 1.0.1) and commit. GitHub builds it and posts it automatically. You can also
- start a build by hand from the Actions tab with Run workflow.
+ to 1.10.1) and commit. GitHub builds it and posts it automatically.
 
 OPTION B: Build it on your own PC
  1. Install Node.js (LTS) from https://nodejs.org
  2. Double-click build-windows.bat. The files appear in the "dist" folder.
  To try it without building: run  npm install  then  npm start
 
-What you get (Windows)
- My-Pics-Setup-X.Y.Z.exe      installs My Pics like a normal program
- My-Pics-Portable-X.Y.Z.exe   runs without installing
+What you get (the file names never include a version number)
+ My-Pics-Setup.exe      installs My Pics like a normal program
+ My-Pics-Portable.exe   runs without installing
+ My-Pics-Mac-arm64.dmg  Macs with an Apple chip (M1 or newer)
+ My-Pics-Mac-x64.dmg    Intel Macs
+
+Automatic updates
+ - My Pics checks for a new version when it starts (and every 4 hours).
+ - If there is one, it downloads in the background. A card then offers
+   "Restart and update". If you ignore the card, the update installs by itself
+   the next time you close My Pics.
+ - Windows installed copy: the update installs quietly, My Pics reopens, and the
+   downloaded installer is deleted. Nothing piles up.
+ - Windows portable copy: the .exe you run is replaced in place by the new
+   version (same file, same place), then My Pics reopens.
+ - Mac: the new disk image downloads and opens. Drag My Pics into Applications.
+   (Mac cannot update silently without a paid Apple developer certificate.)
+ - "Check for updates" at the bottom of the left panel checks right away.
+ - To send an update: raise "version" in package.json and commit. If the number
+   is not raised, installed copies will not see it as new.
+ - If a check fails, the message says why. Common reasons: the repository is not
+   public, or there is no internet connection. The card then offers a button that
+   opens your Releases page instead.
+ - Copies installed before version 1.10.0 update to it the old way, and from
+   1.10.0 on everything above applies.
+
+Saving
+ - Save all asks where to save, then creates two folders in that place:
+      Edits       your edited photos, numbered 1, 2, 3...
+      Watermark   the same photos with your watermark
+   "Save all as preview" creates a Preview folder the same way.
+ - If those folders already contain photos, My Pics asks before replacing files.
 
 Mac
- - The same GitHub build also makes Mac files. Pick the one for your Mac:
-      My-Pics-Mac-X.Y.Z-arm64.dmg   Macs with an Apple chip (M1 or newer)
-      My-Pics-Mac-X.Y.Z-x64.dmg     Intel Macs
-   (Apple menu > About This Mac shows which chip you have.)
  - Open the .dmg and drag My Pics into Applications.
  - The first time, macOS may block the app because it is not notarized. Open System
    Settings > Privacy & Security, scroll down and click Open Anyway. If the Mac says
@@ -41,32 +65,12 @@ Mac
       xattr -cr "/Applications/My Pics.app"
  - Mac files can only be built on GitHub (or on a Mac with  npm run dist:mac ).
 
-Automatic updates
- - Installed copies check for a new version every time My Pics starts (and every 4 hours).
- - Windows installer: the update downloads in the background. A card appears with
-   "Restart and update". It also installs by itself the next time the app is closed.
- - Windows portable app and Mac: a card says a new version is available and the
-   Download button opens your Releases page. (Mac cannot update silently without a
-   paid Apple developer certificate.)
- - "Check for updates" at the bottom of the left panel checks right away.
- - To send an update: raise "version" in package.json (for example 1.6.0 to 1.6.1),
-   then commit. GitHub builds it and posts it to Releases. If the number is not
-   raised, installed copies will not see it as new.
- - If "Check for updates" shows an error, the message now says why. A quick test: open
-   https://github.com/YOUR-USERNAME/my-pics/releases/latest/download/latest.yml in a browser.
-   If you see a text file, updates are wired up. If you see "Not found", the release is
-   missing that file or the repository is not public.
- - Copies installed from an older version (before 1.6.0) do not have the updater yet.
-   They need to install 1.6.0 manually one time. After that, updates are automatic.
-
 Watermark
- - Click Watermark settings to use your own logo (PNG, JPEG or WebP) or your own text.
-   Choose opacity, size and position and see it on your photo as you go.
+ - Click Export, then Watermark settings to use your own logo (PNG, JPEG or WebP)
+   or your own text. Choose opacity, size and position and see it on your photo.
    Your choices are remembered on this computer.
 
 Notes
  - The app is not code-signed, so Windows may show "Windows protected your PC".
    Click More info, then Run anyway.
- - Save all (clean + watermarked) and Save all as preview ask you for a folder,
-   then write numbered files into it (1.jpg, 2.jpg, ...).
  - Opens JPEG, PNG and WebP photos.

@@ -2,7 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('mypics', {
   platform: process.platform,
   saveFile: (name, data) => ipcRenderer.invoke('save-file', name, data),
-  beginSave: (name) => ipcRenderer.invoke('begin-save', name),
+  beginSave: (dirs) => ipcRenderer.invoke('begin-save', dirs),
   writeFile: (rel, data) => ipcRenderer.invoke('write-file', rel, data),
   getVersion: () => ipcRenderer.invoke('get-version'),
   checkUpdate: () => ipcRenderer.invoke('check-update'),

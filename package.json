@@ -1,6 +1,6 @@
 {
   "name": "my-pics",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "My Pics photo editor",
   "main": "main.js",
   "author": "My Pics",
@@ -34,10 +34,10 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "My-Pics-Setup-${version}.${ext}"
+      "artifactName": "My-Pics-Setup.${ext}"
     },
     "portable": {
-      "artifactName": "My-Pics-Portable-${version}.${ext}"
+      "artifactName": "My-Pics-Portable.${ext}"
     },
     "afterPack": "afterPack.js",
     "mac": {
@@ -48,10 +48,7 @@
       "category": "public.app-category.photography"
     },
     "dmg": {
-      "artifactName": "My-Pics-Mac-${version}-${arch}.${ext}"
+      "artifactName": "My-Pics-Mac-${arch}.${ext}"
     }
-  },
-  "dependencies": {
-    "electron-updater": "^6.3.9"
   }
 }
