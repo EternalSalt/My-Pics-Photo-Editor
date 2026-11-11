@@ -24,6 +24,18 @@ OPTION B: Build it on your own PC
  2. Double-click build-windows.bat. The files appear in the "dist" folder.
  To try it without building: run  npm install  then  npm start
 
+ Always-current download links for new users (these work because the files on the
+ release have no version number in their names; swap in your own username):
+   https://github.com/YOUR-USERNAME/my-pics/releases/latest/download/My-Pics-Setup.exe
+   https://github.com/YOUR-USERNAME/my-pics/releases/latest/download/My-Pics-Portable.exe
+ The repository front page (README.md) already has these as download buttons.
+
+ Building on your own PC (build-windows.bat) asks for your GitHub username and
+ repository name so that copy can check for updates. Copies built by GitHub already
+ know this. If a copy says it was "built without update settings", that is why.
+ You can attach a PC-built installer to a release by hand: open the release, click
+ the pencil icon, and drag the .exe from the dist folder into the files area.
+
 What you get (the file names never include a version number)
  My-Pics-Setup.exe      installs My Pics like a normal program
  My-Pics-Portable.exe   runs without installing

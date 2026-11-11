@@ -1,6 +1,6 @@
 {
   "name": "my-pics",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "description": "My Pics photo editor",
   "main": "main.js",
   "author": "My Pics",
@@ -49,6 +49,7 @@
     },
     "dmg": {
       "artifactName": "My-Pics-Mac-${arch}.${ext}"
-    }
+    },
+    "afterAllArtifactBuild": "afterAll.js"
   }
 }

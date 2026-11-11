@@ -79,8 +79,11 @@ const newer = (a, b) => {
 // The file that matches this copy of the app (installer, portable app, or the right Mac disk image)
 function pickAsset(assets) {
   const by = (re) => assets.find((a) => re.test(a.name));
-  if (process.platform === 'win32') return portableFile ? by(/^My-Pics-Portable\.exe$/i) : by(/^My-Pics-Setup\.exe$/i);
-  if (process.platform === 'darwin') return by(new RegExp('^My-Pics-Mac-' + process.arch + '\\.dmg$', 'i'));
+  const v = '(?:-[0-9][0-9A-Za-z.]*)?';
+  if (process.platform === 'win32') {
+    return portableFile ? by(new RegExp('^My-Pics-Portable' + v + '\\.exe$', 'i')) : by(new RegExp('^My-Pics-Setup' + v + '\\.exe$', 'i'));
+  }
+  if (process.platform === 'darwin') return by(new RegExp('^My-Pics-Mac-(?:[0-9][0-9A-Za-z.]*-)?' + process.arch + '\\.dmg$', 'i'));
   return null;
 }
 const modeFor = () => (process.platform === 'darwin' ? 'mac' : portableFile ? 'portable' : 'installer');
