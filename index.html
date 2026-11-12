@@ -126,6 +126,10 @@ select.txt optgroup{color:#3d4960;font-weight:700}
 .exp .btn{display:flex;width:100%;margin-bottom:6px;justify-content:flex-start}
 .exp .txt{margin-bottom:8px}
 .exp [data-save=zip]{margin-top:12px}
+.phead .link{display:inline-flex;align-items:center;gap:5px}
+.link.danger{color:#e5484d}
+.link:disabled{opacity:.4;cursor:default}
+.toast .tact{margin-left:12px;padding:3px 12px;border:0;border-radius:8px;background:var(--blue);color:#06121d;font:inherit;font-weight:700;cursor:pointer}
 .bgs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
 .bgt{position:relative;aspect-ratio:1;padding:0;overflow:hidden;border:2px solid transparent;border-radius:8px;background:var(--chip);cursor:pointer}
 .bgt.on{border-color:var(--blue)}
@@ -184,6 +188,7 @@ body{padding-top:38px}
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></symbol>
 <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
 </defs></svg>
 <div class="app">
 
@@ -281,7 +286,7 @@ body{padding-top:38px}
 </main>
 
 <aside class="panel" aria-label="Photos">
- <div class="phead"><h2>Photos</h2></div>
+ <div class="phead"><h2>Photos</h2><button class="link danger" id="rmph" disabled title="Remove the photo you are looking at from the export (Delete key). Your original file is not touched."><svg class="i"><use href="#i-trash"/></svg>Remove</button></div>
  <div class="path" id="loc">Nothing open yet</div>
  <div class="hint">Drag to reorder. The number is the file name.</div>
  <div class="thumbs" id="list"></div>
@@ -398,7 +403,11 @@ const WM=new Image();WM.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAA
 
 $('#sliders').innerHTML=ADJ.map(([k,l])=>'<label class="sl"><span>'+l+'<b id="v_'+k+'">0</b></span><input type="range" min="-100" max="100" value="0" data-k="'+k+'"></label>').join('');
 
-function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,3200)}
+function toast(m,act){
+ const t=$('#toast');t.textContent=m;
+ if(act){const b=document.createElement('button');b.className='tact';b.textContent=act.label;b.onclick=()=>{act.fn();t.hidden=true};t.append(b)}
+ t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,act?8000:3200);
+}
 function schedule(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;draw()})}
 
 function adjust(x,W,H,p){
@@ -451,7 +460,7 @@ function render(c,max,showGrid,raw){
 
 function draw(){
  const on=!!cur;
- cv.style.display=on?'block':'none';$('#empty').style.display=on?'none':'block';$('#tf').style.display=on?'flex':'none';
+ cv.style.display=on?'block':'none';$('#empty').style.display=on?'none':'block';$('#tf').style.display=on?'flex':'none';$('#rmph').disabled=!on;
  if(on)render(cv,1400,true,compare);
 }
 
@@ -561,7 +570,7 @@ async function addAll(fs){
  try{res=(await Promise.all(files.map(f=>load(f).then(p=>{done++;$('#spint').textContent=label();return p})))).filter(Boolean)}
  finally{clearTimeout(tm);if(b===batch)setLoading(false)}
  if(b!==batch||!res.length)return;
- photos=res;cur=null;list();select(0);
+ photos=res;cur=null;removed.length=0;list();select(0);
  toast((had?'Cleared the previous photos. ':'')+res.length+(res.length>1?' photos':' photo')+' opened'+($('#autoon').checked?' and auto adjusted.':'.'));
 }
 
@@ -707,6 +716,7 @@ addEventListener('keydown',e=>{
  if(e.key==='ArrowRight'&&i<photos.length-1)select(i+1);
  else if(e.key==='ArrowLeft'&&i>0)select(i-1);
  else if(e.key==='g'||e.key==='G'){grid=!grid;$('#grid').checked=grid;schedule()}
+ else if(e.key==='Delete'&&noModal())removeCur();
 });
 const doAuto=autoApply;
 $('#auto').onclick=()=>{if(cur){doAuto(cur);sync();draw();toast('Auto adjusted. Check it and tweak as needed.')}};
@@ -1103,6 +1113,24 @@ function gsNav(d){
 }
 $('#gsprev').onclick=()=>gsNav(-1);
 $('#gsnext').onclick=()=>gsNav(1);
+const removed=[];
+const noModal=()=>['modal','wsmodal','gsmodal','expmodal'].every(id=>$('#'+id).hidden);
+function removeCur(){
+ const i=photos.indexOf(cur);if(i<0)return;
+ const p=cur;removed.push({p,i});if(removed.length>30)removed.shift();
+ photos.splice(i,1);list();
+ if(photos.length)select(Math.min(i,photos.length-1));
+ else{cur=null;$('#loc').textContent='Nothing open yet';draw()}
+ toast('Removed “'+p.name+'”. Your original file isn’t touched.',{label:'Undo',fn:undoRemove});
+}
+function undoRemove(){
+ const r=removed.pop();if(!r)return;
+ photos.splice(Math.min(r.i,photos.length),0,r.p);list();select(photos.indexOf(r.p));
+}
+$('#rmph').onclick=removeCur;
+addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&removed.length&&noModal()&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undoRemove()}
+});
 $('#expopen').onclick=()=>{$('#expmodal').hidden=false};
 $('#expclose').onclick=()=>{$('#expmodal').hidden=true};
 $('#fold2').onclick=()=>$('#folder').click();
