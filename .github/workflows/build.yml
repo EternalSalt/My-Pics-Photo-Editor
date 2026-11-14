@@ -1,46 +1,57 @@
 name: Build Windows app
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main]
+    branches: ["**"]
+    tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   build:
+    name: Build (${{ matrix.variant }})
     runs-on: windows-latest
+    strategy:
+      fail-fast: false          # if the speech build has a packaging problem, the lite build still finishes
+      matrix:
+        variant: [speech, lite]
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: 22
+          python-version: "3.12"
 
-      - name: Install
-        run: npm install
+      - name: Install dependencies
+        run: pip install -r requirements.txt pyinstaller
 
-      - name: Build installer and portable app
-        run: npm run dist
+      - name: Install speech reading
+        if: matrix.variant == 'speech'
+        run: pip install -r requirements-speech.txt
 
-      - name: Read version
-        id: v
-        shell: bash
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Build the app
+        shell: pwsh
+        run: |
+          $flags = @("--noconfirm", "--windowed", "--name", "StreamCutter", "--collect-all", "tkinterdnd2")
+          if ("${{ matrix.variant }}" -eq "speech") {
+            $flags += @("--collect-all", "faster_whisper", "--collect-all", "ctranslate2", "--collect-all", "onnxruntime",
+                        "--collect-all", "av", "--collect-all", "tokenizers", "--collect-all", "huggingface_hub")
+          }
+          pyinstaller @flags main.py
 
-      - name: Publish release
+      - name: Zip the app
+        shell: pwsh
+        run: Compress-Archive -Path dist/StreamCutter -DestinationPath StreamCutter-${{ matrix.variant }}.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StreamCutter-${{ matrix.variant }}-run${{ github.run_number }}
+          path: StreamCutter-${{ matrix.variant }}.zip
+
+      - name: Attach to release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.v.outputs.version }}
-          name: My Pics ${{ steps.v.outputs.version }}
-          body: |
-            Download **My-Pics-Setup-${{ steps.v.outputs.version }}.exe** to install My Pics,
-            or **My-Pics-Portable-${{ steps.v.outputs.version }}.exe** to run it without installing.
-
-            Windows may show "Windows protected your PC" because the app is not code-signed.
-            Click More info, then Run anyway.
-          files: |
-            dist/My-Pics-Setup-*.exe
-            dist/My-Pics-Portable-*.exe
-          overwrite_files: true
+          files: StreamCutter-${{ matrix.variant }}.zip
