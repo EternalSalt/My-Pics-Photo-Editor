@@ -126,6 +126,11 @@ select.txt optgroup{color:#3d4960;font-weight:700}
 .exp .btn{display:flex;width:100%;margin-bottom:6px;justify-content:flex-start}
 .exp .txt{margin-bottom:8px}
 .exp [data-save=zip]{margin-top:12px}
+.phtop{padding:14px 14px 0}
+.phtop+.pscroll{padding-top:8px}
+.th .mv .i{width:13px;height:13px}
+.th .mv button.rm{display:grid;place-items:center}
+.th .mv button.rm:hover{background:#e5484d;color:#fff}
 .phead .link{display:inline-flex;align-items:center;gap:5px}
 .link.danger{color:#e5484d}
 .link:disabled{opacity:.4;cursor:default}
@@ -285,11 +290,14 @@ body{padding-top:38px}
  </div>
 </main>
 
-<aside class="panel" aria-label="Photos">
- <div class="phead"><h2>Photos</h2><button class="link danger" id="rmph" disabled title="Remove the photo you are looking at from the export (Delete key). Your original file is not touched."><svg class="i"><use href="#i-trash"/></svg>Remove</button></div>
+<aside class="panel side" aria-label="Photos">
+ <div class="phtop">
+ <div class="phead"><h2>Photos</h2></div>
  <div class="path" id="loc">Nothing open yet</div>
  <div class="hint">Drag to reorder. The number is the file name.</div>
- <div class="thumbs" id="list"></div>
+ </div>
+ <div class="pscroll">
+ <div class="thumbs" id="list"></div></div>
 </aside>
 
 </div>
@@ -460,7 +468,7 @@ function render(c,max,showGrid,raw){
 
 function draw(){
  const on=!!cur;
- cv.style.display=on?'block':'none';$('#empty').style.display=on?'none':'block';$('#tf').style.display=on?'flex':'none';$('#rmph').disabled=!on;
+ cv.style.display=on?'block':'none';$('#empty').style.display=on?'none':'block';$('#tf').style.display=on?'flex':'none';
  if(on)render(cv,1400,true,compare);
 }
 
@@ -497,6 +505,8 @@ function list(){
    bt.onclick=e=>{e.stopPropagation();const j=i+k;if(j<0||j>=photos.length)return;[photos[i],photos[j]]=[photos[j],photos[i]];list();sync()};
    mv.append(bt);
   });
+  const rb=document.createElement('button');rb.className='rm';rb.innerHTML='<svg class="i"><use href="#i-trash"/></svg>';rb.title='Remove this photo from the export';rb.setAttribute('aria-label','Remove this photo');
+  rb.onclick=e=>{e.stopPropagation();removePhoto(i)};mv.append(rb);
   d.append(pick,n,mv);
   d.ondragstart=e=>{dragI=i;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(i));setTimeout(()=>d.classList.add('drag'))};
   d.ondragend=()=>{dragI=null;d.classList.remove('drag');clear()};
@@ -1115,11 +1125,13 @@ $('#gsprev').onclick=()=>gsNav(-1);
 $('#gsnext').onclick=()=>gsNav(1);
 const removed=[];
 const noModal=()=>['modal','wsmodal','gsmodal','expmodal'].every(id=>$('#'+id).hidden);
-function removeCur(){
- const i=photos.indexOf(cur);if(i<0)return;
- const p=cur;removed.push({p,i});if(removed.length>30)removed.shift();
+function removeCur(){removePhoto(photos.indexOf(cur))}
+function removePhoto(i){
+ if(i<0||i>=photos.length)return;
+ const wasCur=photos[i]===cur;
+ const p=photos[i];removed.push({p,i});if(removed.length>30)removed.shift();
  photos.splice(i,1);list();
- if(photos.length)select(Math.min(i,photos.length-1));
+ if(photos.length){if(wasCur)select(Math.min(i,photos.length-1));else sync()}
  else{cur=null;$('#loc').textContent='Nothing open yet';draw()}
  toast('Removed “'+p.name+'”. Your original file isn’t touched.',{label:'Undo',fn:undoRemove});
 }
@@ -1127,7 +1139,6 @@ function undoRemove(){
  const r=removed.pop();if(!r)return;
  photos.splice(Math.min(r.i,photos.length),0,r.p);list();select(photos.indexOf(r.p));
 }
-$('#rmph').onclick=removeCur;
 addEventListener('keydown',e=>{
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&removed.length&&noModal()&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undoRemove()}
 });
