@@ -1,57 +1,98 @@
-name: Build Windows app
+name: Build apps
 
 on:
-  push:
-    branches: ["**"]
-    tags: ["v*"]
   workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build (${{ matrix.variant }})
+  windows:
     runs-on: windows-latest
-    strategy:
-      fail-fast: false          # if the speech build has a packaging problem, the lite build still finishes
-      matrix:
-        variant: [speech, lite]
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: "3.12"
+          node-version: 22
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt pyinstaller
+      - name: Tell the app which repository to check for updates
+        shell: bash
+        run: echo "{\"owner\":\"${GITHUB_REPOSITORY_OWNER}\",\"repo\":\"${GITHUB_REPOSITORY#*/}\"}" > update-config.json
 
-      - name: Install speech reading
-        if: matrix.variant == 'speech'
-        run: pip install -r requirements-speech.txt
+      - name: Install
+        run: npm install
 
-      - name: Build the app
-        shell: pwsh
-        run: |
-          $flags = @("--noconfirm", "--windowed", "--name", "StreamCutter", "--collect-all", "tkinterdnd2")
-          if ("${{ matrix.variant }}" -eq "speech") {
-            $flags += @("--collect-all", "faster_whisper", "--collect-all", "ctranslate2", "--collect-all", "onnxruntime",
-                        "--collect-all", "av", "--collect-all", "tokenizers", "--collect-all", "huggingface_hub")
-          }
-          pyinstaller @flags main.py
+      - name: Build installer and portable app
+        run: npm run dist
 
-      - name: Zip the app
-        shell: pwsh
-        run: Compress-Archive -Path dist/StreamCutter -DestinationPath StreamCutter-${{ matrix.variant }}.zip
+      - name: Read version
+        id: v
+        shell: bash
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: StreamCutter-${{ matrix.variant }}-run${{ github.run_number }}
-          path: StreamCutter-${{ matrix.variant }}.zip
-
-      - name: Attach to release (tags only)
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          files: StreamCutter-${{ matrix.variant }}.zip
+          tag_name: v${{ steps.v.outputs.version }}
+          name: My Pics ${{ steps.v.outputs.version }}
+          body: |
+            **Windows:** download My-Pics-Setup.exe to install, or My-Pics-Portable.exe to run without installing.
+            If Windows says "Windows protected your PC", click More info, then Run anyway.
+            Copies that are already installed download new versions by themselves.
+
+            **Mac:** download the .dmg that matches your Mac.
+            - Apple chip (M1 or newer): My-Pics-Mac-arm64.dmg
+            - Intel: My-Pics-Mac-x64.dmg
+            Open the .dmg and drag My Pics into Applications. The first time, macOS may block it. Open System Settings, then Privacy & Security, scroll down and click Open Anyway.
+          files: |
+            dist/My-Pics-Setup.exe
+            dist/My-Pics-Portable.exe
+          fail_on_unmatched_files: true
+          overwrite_files: true
+
+  mac:
+    needs: windows
+    runs-on: macos-latest
+    continue-on-error: true
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tell the app which repository to check for updates
+        run: echo "{\"owner\":\"${GITHUB_REPOSITORY_OWNER}\",\"repo\":\"${GITHUB_REPOSITORY#*/}\"}" > update-config.json
+
+      - name: Install
+        run: npm install
+
+      - name: Build Mac disk images
+        run: npm run dist:mac
+
+      - name: Read version
+        id: v
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Add the Mac files to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: My Pics ${{ steps.v.outputs.version }}
+          body: |
+            **Windows:** download My-Pics-Setup.exe to install, or My-Pics-Portable.exe to run without installing.
+            If Windows says "Windows protected your PC", click More info, then Run anyway.
+            Copies that are already installed download new versions by themselves.
+
+            **Mac:** download the .dmg that matches your Mac.
+            - Apple chip (M1 or newer): My-Pics-Mac-arm64.dmg
+            - Intel: My-Pics-Mac-x64.dmg
+            Open the .dmg and drag My Pics into Applications. The first time, macOS may block it. Open System Settings, then Privacy & Security, scroll down and click Open Anyway.
+          files: dist/My-Pics-Mac-*.dmg
+          fail_on_unmatched_files: true
+          overwrite_files: true
