@@ -1,6 +1,6 @@
 # My Pics
 
-A fast photo editor for photographers: auto adjust, crop, watermarks, overlays, green screen removal, and numbered batch export.
+A fast photo editor for photographers: auto adjust with scene detection, clarity and sharpening, bright-area repair, crop, watermarks, overlays, green screen removal, and numbered batch export.
 
 ## Download
 

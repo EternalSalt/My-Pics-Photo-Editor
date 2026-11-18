@@ -1,6 +1,6 @@
 {
   "name": "my-pics",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "My Pics photo editor",
   "main": "main.js",
   "author": "My Pics",
@@ -17,39 +17,13 @@
   "build": {
     "appId": "com.mypics.app",
     "productName": "My Pics",
-    "files": [
-      "main.js",
-      "preload.js",
-      "index.html",
-      "update-config.json",
-      "build/**"
-    ],
-    "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ],
-      "icon": "build/icon.ico"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "artifactName": "My-Pics-Setup.${ext}"
-    },
-    "portable": {
-      "artifactName": "My-Pics-Portable.${ext}"
-    },
+    "files": ["main.js", "preload.js", "index.html", "update-config.json", "build/**"],
     "afterPack": "afterPack.js",
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "icon": "build/icon.png",
-      "category": "public.app-category.photography"
-    },
-    "dmg": {
-      "artifactName": "My-Pics-Mac-${arch}.${ext}"
-    },
-    "afterAllArtifactBuild": "afterAll.js"
+    "afterAllArtifactBuild": "afterAll.js",
+    "win": { "target": ["nsis", "portable"], "icon": "build/icon.ico" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "artifactName": "My-Pics-Setup.${ext}" },
+    "portable": { "artifactName": "My-Pics-Portable.${ext}" },
+    "mac": { "target": ["dmg"], "icon": "build/icon.png", "category": "public.app-category.photography" },
+    "dmg": { "artifactName": "My-Pics-Mac-${arch}.${ext}" }
   }
 }

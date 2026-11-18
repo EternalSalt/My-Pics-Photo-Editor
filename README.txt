@@ -9,6 +9,8 @@ OPTION A: Build it on GitHub (nothing to install on your computer)
     Commit changes.
     If GitHub will not take the .github folder: Add file > Create new file, type
     .github/workflows/build.yml as the name, and paste in the contents of that file.
+    (To replace an existing build.yml: open it in the repository, click the pencil
+    icon, select all, paste the new text, and commit.)
  3. Click the Actions tab. The build starts by itself and takes about 5 minutes.
     (If it asks, click "I understand my workflows, go ahead and enable them".)
  4. When it turns green, go back to the repository's main page and click
@@ -16,25 +18,24 @@ OPTION A: Build it on GitHub (nothing to install on your computer)
  5. Share this link (swap in your own username):
       https://github.com/YOUR-USERNAME/my-pics/releases/latest
 
- Publishing a new version later: change "version" in package.json (for example
- to 1.10.1) and commit. GitHub builds it and posts it automatically.
-
-OPTION B: Build it on your own PC
- 1. Install Node.js (LTS) from https://nodejs.org
- 2. Double-click build-windows.bat. The files appear in the "dist" folder.
- To try it without building: run  npm install  then  npm start
-
  Always-current download links for new users (these work because the files on the
  release have no version number in their names; swap in your own username):
    https://github.com/YOUR-USERNAME/my-pics/releases/latest/download/My-Pics-Setup.exe
    https://github.com/YOUR-USERNAME/my-pics/releases/latest/download/My-Pics-Portable.exe
  The repository front page (README.md) already has these as download buttons.
 
- Building on your own PC (build-windows.bat) asks for your GitHub username and
- repository name so that copy can check for updates. Copies built by GitHub already
- know this. If a copy says it was "built without update settings", that is why.
+ Publishing a new version later: change "version" in package.json (for example
+ to 1.12.1) and commit. GitHub builds it and posts it automatically.
+
+OPTION B: Build it on your own PC
+ 1. Install Node.js (LTS) from https://nodejs.org
+ 2. Double-click build-windows.bat. The files appear in the "dist" folder.
+ Building on your own PC asks for your GitHub username and repository name so that
+ copy can check for updates. Copies built by GitHub already know this. If a copy says
+ it was "built without update settings", that is why.
  You can attach a PC-built installer to a release by hand: open the release, click
  the pencil icon, and drag the .exe from the dist folder into the files area.
+ To try it without building: run  npm install  then  npm start
 
 What you get (the file names never include a version number)
  My-Pics-Setup.exe      installs My Pics like a normal program
@@ -49,18 +50,11 @@ Automatic updates
    the next time you close My Pics.
  - Windows installed copy: the update installs quietly, My Pics reopens, and the
    downloaded installer is deleted. Nothing piles up.
- - Windows portable copy: the .exe you run is replaced in place by the new
-   version (same file, same place), then My Pics reopens.
+ - Windows portable copy: the .exe you run is replaced in place by the new version.
  - Mac: the new disk image downloads and opens. Drag My Pics into Applications.
-   (Mac cannot update silently without a paid Apple developer certificate.)
  - "Check for updates" at the bottom of the left panel checks right away.
- - To send an update: raise "version" in package.json and commit. If the number
-   is not raised, installed copies will not see it as new.
- - If a check fails, the message says why. Common reasons: the repository is not
-   public, or there is no internet connection. The card then offers a button that
-   opens your Releases page instead.
- - Copies installed before version 1.10.0 update to it the old way, and from
-   1.10.0 on everything above applies.
+ - To send an update: raise "version" in package.json and commit.
+ - If a check fails, the message says why (for example the repository is not public).
 
 Saving
  - Save all asks where to save, then creates two folders in that place:
@@ -76,11 +70,6 @@ Mac
    the app is "damaged", open Terminal and run:
       xattr -cr "/Applications/My Pics.app"
  - Mac files can only be built on GitHub (or on a Mac with  npm run dist:mac ).
-
-Watermark
- - Click Export, then Watermark settings to use your own logo (PNG, JPEG or WebP)
-   or your own text. Choose opacity, size and position and see it on your photo.
-   Your choices are remembered on this computer.
 
 Notes
  - The app is not code-signed, so Windows may show "Windows protected your PC".
