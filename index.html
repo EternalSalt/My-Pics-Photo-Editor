@@ -133,6 +133,17 @@ select.txt optgroup{color:#3d4960;font-weight:700}
 .th .mv button.rm:hover{background:#e5484d;color:#fff}
 .sub{margin:12px 0 6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .sub:first-child{margin-top:0}
+.sechead{display:flex;align-items:center;justify-content:space-between;margin:16px 0 6px}
+.sechead .sec{margin:0}
+details.opts{padding:4px 0;border:0}
+details.opts summary{font-size:12px;font-weight:600;color:var(--mute)}
+details.tool{padding:9px 0}
+.steps{margin:14px 0 0!important;font-size:12px;color:#97a3b6}
+.steps b{display:inline-grid;place-items:center;width:18px;height:18px;margin:0 4px 0 8px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:11px}
+.steps b:first-child{margin-left:0}
+.wsprev{position:relative}
+#rbov{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+#gsimg.brush{cursor:crosshair;touch-action:none}
 .bfov{position:absolute;left:18px;top:18px;width:calc(100% - 36px);height:calc(100% - 36px);pointer-events:none;z-index:1}
 .phead .link{display:inline-flex;align-items:center;gap:5px}
 .link.danger{color:#e5484d}
@@ -210,38 +221,29 @@ body{padding-top:38px}
   <input type="file" id="files" accept="image/*" multiple hidden>
   <input type="file" id="folder" webkitdirectory multiple hidden>
 
-  <details open>
-   <summary>Auto adjust</summary>
-   <label class="hint" for="scene">Scene type</label>
-   <select class="txt" id="scene" style="margin-bottom:8px"><option value="smart">Auto-detect</option><option value="auto">General</option><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option><option value="candid">Candids</option><option value="studio">Studio (lit)</option></select>
-   <div class="hint" id="scenehint" style="margin:-2px 0 8px"></div>
-   <div class="seg" style="margin-bottom:8px"><button class="btn alt" id="auto"><svg class="i"><use href="#i-wand"/></svg>This photo</button><button class="btn" id="autoall">All photos</button></div>
-   <div class="row"><label for="autoon">Auto adjust on open</label><input type="checkbox" id="autoon" checked></div>
-   <div class="row"><label for="autodet" title="Adds a gentle amount of clarity and sharpening, based on how soft each photo looks">Include clarity and sharpening</label><input type="checkbox" id="autodet" checked></div>
+  <div class="sec">Auto adjust</div>
+  <label class="hint" for="scene">Photo type</label>
+  <select class="txt" id="scene" style="margin-bottom:6px"><option value="smart">Auto-detect</option><option value="auto">General</option><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option><option value="candid">Candids</option><option value="studio">Studio (lit)</option></select>
+  <div class="hint" id="scenehint" style="margin:0 0 8px"></div>
+  <div class="seg" style="margin-bottom:6px"><button class="btn alt" id="auto" title="Fix the exposure, color, clarity and sharpness of this photo"><svg class="i"><use href="#i-wand"/></svg>This photo</button><button class="btn" id="autoall" title="Do the same for every photo">All photos</button></div>
+  <details class="opts">
+   <summary>Auto options</summary>
+   <div class="row"><label for="autoon">Auto adjust when I open photos</label><input type="checkbox" id="autoon" checked></div>
+   <div class="row"><label for="autodet" title="A gentle amount of clarity and sharpening based on how soft each photo looks">Include clarity and sharpening</label><input type="checkbox" id="autodet" checked></div>
   </details>
 
-  <details open>
-   <summary>Light and color</summary>
-   <div class="rst"><button class="link" id="reset" title="Reset the sliders and black and white (the crop is not touched)">Reset edits</button></div>
-   <div id="sliders"></div>
-   <div class="row"><label for="bw">Black and white</label><input type="checkbox" id="bw"></div>
-  </details>
+  <div class="sechead"><span class="sec">Adjust</span><button class="link" id="reset" title="Reset the sliders and black and white (the crop is not touched)">Reset edits</button></div>
+  <div id="sliders"></div>
+  <div class="row"><label for="bw">Black and white</label><input type="checkbox" id="bw"></div>
 
-  <details>
-   <summary>Overlay</summary>
-   <button class="btn" id="ovadd" title="Add a logo or frame, then drag it on the photo">Add overlay image</button>
-   <input type="file" id="ovfile" accept="image/*" hidden>
-   <div id="ovctl" hidden>
-    <label class="sl"><span>Size<b id="v_ovs">30</b></span><input type="range" id="ovs" min="5" max="100" value="30"></label>
-    <label class="sl"><span>Opacity<b id="v_ovo">100</b></span><input type="range" id="ovo" min="5" max="100" value="100"></label>
-    <div class="row"><label for="ovon">Show on this photo</label><input type="checkbox" id="ovon" checked></div>
-    <button class="btn" id="ovrm"><svg class="i"><use href="#i-x"/></svg>Remove overlay</button>
-    <div class="hint">Drag the overlay on the photo to move it.</div>
-   </div>
+  <div class="sec">Tools</div>
+  <details class="tool">
+   <summary>Remove background</summary>
+   <div class="row"><label for="gson">Remove it on this photo</label><input type="checkbox" id="gson"></div>
+   <button class="btn" id="gsopen"><svg class="i"><use href="#i-layers"/></svg>Settings and backgrounds…</button>
   </details>
-
-  <details>
-   <summary>Fix bright areas</summary>
+  <details class="tool">
+   <summary>Fix bright spots</summary>
    <div class="row"><label for="bfon">Fix on this photo</label><input type="checkbox" id="bfon"></div>
    <div id="bfctl" hidden>
     <div class="seg" style="margin-bottom:8px"><button class="btn" id="bfauto" title="Find the blown-out bright areas automatically">Auto-select</button><button class="btn" id="bflasso" title="Draw around the area to fix">Lasso</button></div>
@@ -254,11 +256,17 @@ body{padding-top:38px}
     <div class="hint">Auto-select finds the blown-out areas. Add a lasso to limit it to one spot, or turn Auto-select off to fix everything inside the lasso.</div>
    </div>
   </details>
-
-  <details>
-   <summary>Green screen</summary>
-   <div class="row"><label for="gson">Remove screen on this photo</label><input type="checkbox" id="gson"></div>
-   <button class="btn" id="gsopen"><svg class="i"><use href="#i-layers"/></svg>Green screen settings…</button>
+  <details class="tool">
+   <summary>Overlay</summary>
+   <button class="btn" id="ovadd" title="Add a logo or frame, then drag it on the photo">Add overlay image</button>
+   <input type="file" id="ovfile" accept="image/*" hidden>
+   <div id="ovctl" hidden>
+    <label class="sl"><span>Size<b id="v_ovs">30</b></span><input type="range" id="ovs" min="5" max="100" value="30"></label>
+    <label class="sl"><span>Opacity<b id="v_ovo">100</b></span><input type="range" id="ovo" min="5" max="100" value="100"></label>
+    <div class="row"><label for="ovon">Show on this photo</label><input type="checkbox" id="ovon" checked></div>
+    <button class="btn" id="ovrm"><svg class="i"><use href="#i-x"/></svg>Remove overlay</button>
+    <div class="hint">Drag the overlay on the photo to move it.</div>
+   </div>
   </details>
  </div>
  <div class="dock">
@@ -276,6 +284,7 @@ body{padding-top:38px}
    <div class="ico"><svg class="i"><use href="#i-open"/></svg></div>
    <h3>Drop photos here</h3>
    <p>Open a few photos or a whole folder to start editing.</p>
+   <p class="steps"><b>1</b> Open photos <b>2</b> Auto adjust <b>3</b> Export</p>
    <div class="acts"><button class="btn pri" id="open2">Open photos</button><button class="btn" id="fold2">Open a folder</button></div>
   </div>
   <div class="tfloat" id="tf" style="display:none">
@@ -374,29 +383,18 @@ body{padding-top:38px}
  </div>
 </div>
 <div class="modal" id="gsmodal" hidden>
- <div class="box ws" role="dialog" aria-label="Green screen settings">
+ <div class="box ws" role="dialog" aria-label="Remove background">
   <div class="wsprev">
-   <img id="gsimg" alt="Green screen preview">
+   <img id="gsimg" alt="Background removal preview">
+   <canvas id="rbov"></canvas>
    <div class="seg"><button class="btn" id="gsprev">‹ Previous</button><span id="gsn" style="align-self:center;padding:0 6px;color:#cfd7e4;font-size:12px;font-weight:700;white-space:nowrap"></span><button class="btn" id="gsnext">Next ›</button></div>
    <div class="seg"><button class="btn on" id="gsres">Result</button><button class="btn" id="gsorg">Original</button></div>
-   <div class="hint" style="color:#97a3b6">Tip: press Pick, then click the screen in the preview.</div>
   </div>
   <div class="wsctl">
-   <h2>Green screen</h2>
-   <div class="row"><label for="gsthis">Remove screen on this photo</label><input type="checkbox" id="gsthis"></div>
-   <div class="seg" style="margin-bottom:10px"><button class="btn" id="gsall">Turn on for all photos</button><button class="btn" id="gsnone">Turn off for all photos</button></div>
-   <div class="hint" style="margin-bottom:6px">Screen colors for this photo. Add more when the lighting is uneven.</div>
-   <div class="swatches" id="gscols"></div>
-   <div class="crow"><button class="btn" id="gspick">Pick from photo</button><button class="btn" id="gsauto" title="Sample the edges of the photo">Auto-detect</button></div>
-   <button class="btn" id="gsautoall" style="margin-bottom:10px">Auto-detect on every photo</button>
-   <div class="crow"><input type="color" id="gsc" value="#00b140" aria-label="Add a custom color"><select class="txt" id="gscol" aria-label="Add a preset color"><option value="">Add a preset…</option><option value="#00b140">Green</option><option value="#0047bb">Blue</option></select></div>
-   <label class="sl"><span>Tolerance<b id="v_gst">40%</b></span><input type="range" id="gst" min="0" max="100" value="40"></label>
-   <label class="sl"><span>Softness<b id="v_gss">30%</b></span><input type="range" id="gss" min="0" max="100" value="30"></label>
-   <label class="sl"><span>Spill removal<b id="v_gsp">60%</b></span><input type="range" id="gsp" min="0" max="100" value="60"></label>
-   <label class="sl"><span>Edge shrink<b id="v_gse">1 px</b></span><input type="range" id="gse" min="0" max="6" value="1"></label>
-   <div class="hint">Screen colors and these sliders belong to this photo only.</div>
-   <div class="seg" style="margin-bottom:10px"><button class="btn" id="gskall">Use on all photos</button><button class="btn" id="gskreset">Reset this photo</button></div>
-   <label class="hint" for="gsbgm">Background</label>
+   <h2>Remove background</h2>
+   <div class="row"><label for="gsthis">Remove it on this photo</label><input type="checkbox" id="gsthis"></div>
+   <div class="seg" style="margin-bottom:10px"><button class="btn" id="gsall">Turn on for all</button><button class="btn" id="gsnone">Turn off for all</button></div>
+   <label class="hint" for="gsbgm">New background</label>
    <select class="txt" id="gsbgm"><option value="image">My images</option><option value="color">Solid color</option><option value="none">Transparent (saves as PNG)</option></select>
    <div id="gsbgimg">
     <div class="bgs" id="gsbgs"></div>
@@ -413,6 +411,37 @@ body{padding-top:38px}
     </div>
    </div>
    <div id="gsbgcol"><label class="hint" for="gsbgc">Color shown behind the background</label><input type="color" id="gsbgc" value="#ffffff"></div>
+   <div class="sec" style="margin-top:14px">Find the background</div>
+   <label class="hint" for="gsmeth">How to find the background</label>
+   <select class="txt" id="gsmeth"><option value="auto">Automatic</option><option value="any">Any background</option><option value="screen">Green or blue screen</option></select>
+
+   <div id="gsany">
+    <label class="sl"><span>How much to remove<b id="v_rbs">50</b></span><input type="range" id="rbs" min="0" max="100" value="50"></label>
+    <label class="sl"><span>Soft edges and hair<b id="v_rbb">50</b></span><input type="range" id="rbb" min="0" max="100" value="50"></label>
+    <div class="hint" style="margin-bottom:6px">Fix mistakes by painting on the photo.</div>
+    <div class="seg" style="margin-bottom:8px"><button class="btn" id="rbkeep" title="Paint over parts of the person that were removed">Keep</button><button class="btn" id="rbrem" title="Paint over background that was left behind">Remove</button></div>
+    <label class="sl"><span>Brush size<b id="v_rbsz">4</b></span><input type="range" id="rbsz" min="1" max="15" value="4"></label>
+    <div class="seg" style="margin-bottom:10px"><button class="btn" id="rbundo">Undo stroke</button><button class="btn" id="rbclr">Clear brushes</button></div>
+   </div>
+
+   <div id="gsscr">
+    <div class="hint" style="margin-bottom:6px">Screen colors for this photo. Add more when the lighting is uneven.</div>
+    <div class="swatches" id="gscols"></div>
+    <div class="crow"><button class="btn" id="gspick">Pick from photo</button><button class="btn" id="gsauto" title="Sample the edges of the photo">Auto-detect</button></div>
+    <button class="btn" id="gsautoall" style="margin-bottom:10px">Auto-detect on every photo</button>
+    <div class="crow"><input type="color" id="gsc" value="#00b140" aria-label="Add a custom color"><select class="txt" id="gscol" aria-label="Add a preset color"><option value="">Add a preset…</option><option value="#00b140">Green</option><option value="#0047bb">Blue</option></select></div>
+    <details class="opts">
+     <summary>More screen settings</summary>
+     <label class="sl"><span>Tolerance<b id="v_gst">40%</b></span><input type="range" id="gst" min="0" max="100" value="40"></label>
+     <label class="sl"><span>Softness<b id="v_gss">30%</b></span><input type="range" id="gss" min="0" max="100" value="30"></label>
+     <label class="sl"><span>Spill removal<b id="v_gsp">60%</b></span><input type="range" id="gsp" min="0" max="100" value="60"></label>
+    </details>
+   </div>
+
+   <label class="sl"><span>Edge shrink<b id="v_gse">1 px</b></span><input type="range" id="gse" min="0" max="6" value="1"></label>
+   <div class="hint">These settings belong to this photo only.</div>
+   <div class="seg" style="margin-bottom:10px"><button class="btn" id="gskall">Use on all photos</button><button class="btn" id="gskreset">Reset this photo</button></div>
+
    <div class="hint">Light and color edits apply to the subject. Backgrounds are placed as they are.</div>
    <button class="btn pri" id="gsdone">Done</button>
    <button class="btn" id="gsreset">Reset to default</button>
@@ -476,7 +505,7 @@ function render(c,max,showGrid,raw){
  x.setTransform(1,0,0,1,0,0);
  if(!raw&&p.bf&&p.bf.on)bfix(x,W,H,p);
  if(!raw)detail(x,W,H,p);
- if(!raw&&p.gs)keyPass(x,W,H,p);
+ if(!raw&&p.gs){if(rbMethod(p)==='any')subjectPass(x,W,H,p);else keyPass(x,W,H,p)}
  if(!raw)adjust(x,W,H,p);
  if(!raw&&p.gs)backdrop(x,W,H);
  if(!raw&&ov.img&&p.ov!==0){
@@ -590,7 +619,7 @@ const load=f=>new Promise(res=>{
   const t=document.createElement('canvas'),k=240/Math.max(im.naturalWidth,im.naturalHeight);
   t.width=Math.round(im.naturalWidth*k)||1;t.height=Math.round(im.naturalHeight*k)||1;
   t.getContext('2d').drawImage(im,0,0,t.width,t.height);
-  const p={name:f.name,img:im,thumb:t.toDataURL('image/jpeg',.7),adj:zero(),rot:0,flip:0,angle:0,crop:0,bw:0,m:Object.assign(stats(t),focusStats(im),sceneFeat(t)),
+  const p={name:f.name,img:im,thumb:t.toDataURL('image/jpeg',.7),adj:zero(),rot:0,flip:0,angle:0,crop:0,bw:0,m:Object.assign(stats(t),focusStats(im),sceneFeat(t)),bgi:bgInfo(t),
    loc:f.webkitRelativePath?'Folder: '+f.webkitRelativePath.split('/')[0]:'Opened from this device'};
   /* auto adjust runs once the scene is known */
   readExif(f).then(ex=>{p.exif=ex;p.scene=pickScene(p.m,ex);if($('#autoon').checked)autoApply(p);res(p)});
@@ -886,17 +915,18 @@ $('#scene').onchange=e=>{
 };
 /* ===== green screen ===== */
 const GSKEY='mypics.greenscreen.v1',GSD={bgm:'image',bgc:'#ffffff',fit:'cover',sel:-1};
-const KDEF={cols:['#00b140'],tol:40,soft:30,spill:60,edge:1};
+const KDEF={cols:['#00b140'],tol:40,soft:30,spill:60,edge:1,method:'auto',rs:50,rb:50,strokes:[]};
+const kdef=p=>p&&p.bgi&&p.bgi.screen&&p.bgi.cols&&p.bgi.cols.length?{...KDEF,cols:p.bgi.cols}:KDEF;
 const BTD={z:1,x:0,y:0,f:0,bl:0,br:0};
 const GS={...GSD,bgs:[],bgt:[],img:null};
-const kr=()=>(cur&&cur.gk)||KDEF;
-const kw=()=>cur?(cur.gk||(cur.gk=JSON.parse(JSON.stringify(KDEF)))):JSON.parse(JSON.stringify(KDEF));
+const kr=()=>(cur&&cur.gk)||kdef(cur);
+const kw=()=>cur?(cur.gk||(cur.gk=JSON.parse(JSON.stringify(kdef(cur))))):JSON.parse(JSON.stringify(KDEF));
 let pickMode=false,gsView='result',gsRaf=0;
 const hexRGB=s=>{const n=parseInt(s.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]};
 const rgbHex=(r,g,b)=>'#'+[r,g,b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
 function gsTransparent(p){return !!(p&&p.gs&&(GS.bgm==='none'||(GS.bgm==='image'&&!GS.img)))}
 function keyPass(x,W,H,p){
- const K=(p&&p.gk)||KDEF;
+ const K=(p&&p.gk)||kdef(p);
  const d=x.getImageData(0,0,W,H),px=d.data,n=W*H;
  const ks=K.cols.map(hex=>{
   const[r,g,b]=hexRGB(hex),mx=Math.max(r,g,b),mn=Math.min(r,g,b),df=mx-mn||1;
@@ -1003,6 +1033,7 @@ function gsThumbs(){
 function syncGS(){
  $('#gsthis').checked=!!(cur&&cur.gs);
  gsSwatches();
+ syncRB();
  $('#gsn').textContent=photos.length?(photos.indexOf(cur)+1)+' of '+photos.length:'';
  $('#gsprev').disabled=photos.indexOf(cur)<=0;$('#gsnext').disabled=photos.indexOf(cur)>=photos.length-1;
   [['gst','tol'],['gss','soft'],['gsp','spill'],['gse','edge']].forEach(([id,k])=>{const kk=kr();$('#'+id).value=kk[k];$('#v_'+id).textContent=kk[k]+(k==='edge'?' px':'%')});
@@ -1057,14 +1088,14 @@ function gsAddFiles(files){
 function openGS(){
  if(!photos.length){toast('Open a photo first.');return}
  cur.gs=true;$('#gson').checked=true;pickMode=false;gsView='result';$('#gsimg').classList.remove('pickon');
- syncGS();$('#gsmodal').hidden=false;schedule();gsRender();
+ syncGS();$('#gsmodal').hidden=false;if(rbNeeds(cur))rbRecalc();else{schedule();gsRender()}
 }
 $('#gsopen').onclick=openGS;
 $('#gsdone').onclick=()=>{pickMode=false;$('#gsimg').classList.remove('pickon');$('#gsmodal').hidden=true;schedule()};
-$('#gson').onchange=e=>{if(cur){cur.gs=e.target.checked;schedule()}};
-$('#gsthis').onchange=e=>{if(cur){cur.gs=e.target.checked;$('#gson').checked=cur.gs;schedule();gsRefresh()}};
-$('#gsall').onclick=()=>{photos.forEach(p=>{p.gs=true});$('#gson').checked=$('#gsthis').checked=true;schedule();toast('Green screen removal is on for all '+photos.length+' photos.')};
-$('#gsnone').onclick=()=>{photos.forEach(p=>{p.gs=false});$('#gson').checked=$('#gsthis').checked=false;schedule();gsRefresh();toast('Green screen removal is off for all photos.')};
+$('#gson').onchange=e=>{if(cur){cur.gs=e.target.checked;if(cur.gs&&rbNeeds(cur))rbRecalc();else schedule()}};
+$('#gsthis').onchange=e=>{if(cur){cur.gs=e.target.checked;$('#gson').checked=cur.gs;if(cur.gs&&rbNeeds(cur))rbRecalc();else{schedule();gsRefresh()}}};
+$('#gsall').onclick=()=>{photos.forEach(p=>{p.gs=true});$('#gson').checked=$('#gsthis').checked=true;schedule();toast('Background removal is on for all '+photos.length+' photos.')};
+$('#gsnone').onclick=()=>{photos.forEach(p=>{p.gs=false});$('#gson').checked=$('#gsthis').checked=false;schedule();gsRefresh();toast('Background removal is off for all photos.')};
 [['gst','tol'],['gss','soft'],['gsp','spill'],['gse','edge']].forEach(([id,k])=>{$('#'+id).oninput=e=>{const kk=kw();kk[k]=+e.target.value;$('#v_'+id).textContent=kk[k]+(k==='edge'?' px':'%');gsGo()}});
 $('#gsbgm').onchange=e=>{GS.bgm=e.target.value;syncGS();gsGo()};
 $('#gsfit').onchange=e=>{GS.fit=e.target.value;syncGS();gsGo()};
@@ -1078,7 +1109,7 @@ $('#gsfl').onchange=e=>btSet('f',e.target.checked?1:0);
 $('#gsbreset').onclick=()=>{if(GS.sel>=0){GS.bgt[GS.sel]={...BTD};syncGS();gsGo()}};
 {
  const gi=$('#gsimg');let drag=null;
- const can=()=>GS.bgm==='image'&&GS.img&&btCur()&&!pickMode&&gsView==='result';
+ const can=()=>GS.bgm==='image'&&GS.img&&btCur()&&!pickMode&&!rbBrush&&gsView==='result';
  gi.draggable=false;gi.addEventListener('dragstart',e=>e.preventDefault());
  gi.addEventListener('pointerdown',e=>{if(!can())return;const bt=btCur();drag={x:e.clientX,y:e.clientY,bx:bt.x,by:bt.y};gi.setPointerCapture(e.pointerId);gi.style.cursor='grabbing'});
  gi.addEventListener('pointermove',e=>{
@@ -1137,13 +1168,13 @@ $('#gsauto').onclick=()=>{
 $('#gsautoall').onclick=()=>{
  if(!photos.length){toast('Open photos first.');return}
  let hit=0;
- photos.forEach(p=>{const f=detectCols(p);if(f.length){mergeCols(p.gk||(p.gk=JSON.parse(JSON.stringify(KDEF))),f);hit++}});
+ photos.forEach(p=>{const f=detectCols(p);if(f.length){mergeCols(p.gk||(p.gk=JSON.parse(JSON.stringify(kdef(p)))),f);hit++}});
  syncGS();gsGo();
  toast('Found screen colors on '+hit+' of '+photos.length+' photos.');
 };
 $('#gskall').onclick=()=>{
  if(!cur)return;
- const k=JSON.stringify(kr());photos.forEach(p=>{p.gk=JSON.parse(k)});
+ const k=JSON.parse(JSON.stringify(kr()));k.strokes=[];photos.forEach(p=>{p.gk=JSON.parse(JSON.stringify(k))});
  schedule();toast('This photo’s screen settings are now on all '+photos.length+' photos.');
 };
 $('#gskreset').onclick=()=>{if(cur){cur.gk=null;syncGS();gsGo()}};
@@ -1482,6 +1513,244 @@ function bfEnd(){
 }
 ['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,bfEnd));
 addEventListener('resize',bfDrawOverlay);
+/* ===== remove background: finds the person on any background; green and blue screens use the screen engine ===== */
+function labv(r,g,b,o){
+ r/=255;g/=255;b/=255;
+ r=r>.04045?Math.pow((r+.055)/1.055,2.4):r/12.92;g=g>.04045?Math.pow((g+.055)/1.055,2.4):g/12.92;b=b>.04045?Math.pow((b+.055)/1.055,2.4):b/12.92;
+ const f=t=>t>.008856?Math.cbrt(t):7.787*t+16/116;
+ const X=f((r*.4124+g*.3576+b*.1805)/.95047),Y=f(r*.2126+g*.7152+b*.0722),Z=f((r*.0193+g*.1192+b*.9505)/1.08883);
+ o[0]=116*Y-16;o[1]=500*(X-Y);o[2]=200*(Y-Z);
+}
+function makeSrc(im,max){
+ const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,s=Math.min(1,max/Math.max(iw,ih)),w=Math.max(8,Math.round(iw*s)),h=Math.max(8,Math.round(ih*s));
+ const c=document.createElement('canvas');c.width=w;c.height=h;
+ const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,w,h);
+ const d=x.getImageData(0,0,w,h).data,n=w*h,R=new Float32Array(n),G=new Float32Array(n),B=new Float32Array(n),L=new Float32Array(n),A=new Float32Array(n),Bb=new Float32Array(n),o=[0,0,0];
+ for(let i=0,j=0;i<d.length;i+=4,j++){R[j]=d[i];G[j]=d[i+1];B[j]=d[i+2];labv(d[i],d[i+1],d[i+2],o);L[j]=o[0];A[j]=o[1];Bb[j]=o[2]}
+ return{w,h,R,G,B,L,A,b:Bb};
+}
+function kmeans(P,dim,k,it){
+ const n=P.length/dim;k=Math.max(1,Math.min(k,n));
+ const C=new Float32Array(k*dim),cnt=new Float32Array(k),as=new Int32Array(n),idx=Array.from({length:n},(_,i)=>i).sort((a,b)=>P[a*dim]-P[b*dim]);
+ for(let c=0;c<k;c++){const q=idx[Math.min(n-1,Math.floor((c+.5)/k*n))];for(let d=0;d<dim;d++)C[c*dim+d]=P[q*dim+d]}
+ for(let t=0;t<it;t++){
+  const S=new Float32Array(k*dim);cnt.fill(0);
+  for(let i=0;i<n;i++){
+   let b=0,bd=1e30;
+   for(let c=0;c<k;c++){let s=0;for(let d=0;d<dim;d++){const v=P[i*dim+d]-C[c*dim+d];s+=v*v}if(s<bd){bd=s;b=c}}
+   as[i]=b;cnt[b]++;for(let d=0;d<dim;d++)S[b*dim+d]+=P[i*dim+d];
+  }
+  for(let c=0;c<k;c++)if(cnt[c])for(let d=0;d<dim;d++)C[c*dim+d]=S[c*dim+d]/cnt[c];
+ }
+ const sp=new Float32Array(k);
+ for(let i=0;i<n;i++){const c=as[i];let s=0;for(let d=0;d<dim;d++){const v=P[i*dim+d]-C[c*dim+d];s+=v*v}sp[c]+=s}
+ for(let c=0;c<k;c++)sp[c]=cnt[c]?Math.sqrt(sp[c]/cnt[c]):0;
+ return{C,cnt,sp,as,k,dim,n};
+}
+function borderClusters(S){
+ const{w,h,L,A,b:Bb,R,G,B}=S,bw=Math.max(3,Math.round(Math.min(w,h)*.04)),pts=[],meta=[],rgb=[];
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const e=(y<bw?1:0)|(y>=h-bw?2:0)|(x<bw?4:0)|(x>=w-bw?8:0);
+  if(!e)continue;
+  const j=y*w+x;pts.push(L[j],A[j],Bb[j]);meta.push(e);rgb.push(R[j],G[j],B[j]);
+ }
+ const n=meta.length;if(n<8)return{list:[]};
+ const km=kmeans(new Float32Array(pts),3,4,8),edgeN=[0,0,0,0],list=[];
+ for(let i=0;i<n;i++)for(let e=0;e<4;e++)if(meta[i]&(1<<e))edgeN[e]++;
+ for(let c=0;c<km.k;c++){
+  if(!km.cnt[c])continue;
+  const cov=[0,0,0,0];let r=0,g=0,bl=0;
+  for(let i=0;i<n;i++)if(km.as[i]===c){for(let e=0;e<4;e++)if(meta[i]&(1<<e))cov[e]++;r+=rgb[i*3];g+=rgb[i*3+1];bl+=rgb[i*3+2]}
+  list.push({share:km.cnt[c]/n,edges:cov.filter((v,e)=>edgeN[e]&&v/edgeN[e]>=.12).length,r:r/km.cnt[c],g:g/km.cnt[c],b:bl/km.cnt[c],mu:[km.C[c*3],km.C[c*3+1],km.C[c*3+2]],sp:km.sp[c]});
+ }
+ list.sort((a,b)=>b.share-a.share);
+ return{list};
+}
+/* is the picture shot against a green or blue screen? (decided from the colors along its edges) */
+function bgInfo(t){
+ try{
+  const bc=borderClusters(makeSrc(t,240)),big=bc.list[0];
+  const scr=c=>{const mx=Math.max(c.r,c.g,c.b),mn=Math.min(c.r,c.g,c.b),s=mx?(mx-mn)/mx:0,hu=hueDeg(c.r,c.g,c.b);return s>=.72&&mx>=89&&((hu>=85&&hu<=175)||(hu>=195&&hu<=265))};
+  return{screen:!!big&&big.share>=.45&&scr(big),cols:bc.list.filter(c=>c.share>=.1&&scr(c)).slice(0,4).map(c=>rgbHex(c.r,c.g,c.b))};
+ }catch(e){return{screen:false,cols:[]}}
+}
+function rbMethod(p){
+ const k=p.gk||kdef(p);
+ if(k.method==='screen'||k.method==='any')return k.method;
+ return p.bgi&&p.bgi.screen?'screen':'any';
+}
+function comps(mask,w,h){
+ const n=w*h,lab=new Int32Array(n),areas=[0];let nl=0;
+ for(let s=0;s<n;s++){
+  if(!mask[s]||lab[s])continue;
+  nl++;lab[s]=nl;let a=0;const q=[s];
+  while(q.length){
+   const j=q.pop(),x=j%w,y=(j/w)|0;a++;
+   if(x>0&&mask[j-1]&&!lab[j-1]){lab[j-1]=nl;q.push(j-1)}
+   if(x<w-1&&mask[j+1]&&!lab[j+1]){lab[j+1]=nl;q.push(j+1)}
+   if(y>0&&mask[j-w]&&!lab[j-w]){lab[j-w]=nl;q.push(j-w)}
+   if(y<h-1&&mask[j+w]&&!lab[j+w]){lab[j+w]=nl;q.push(j+w)}
+  }
+  areas.push(a);
+ }
+ return{lab,areas,nl};
+}
+const segSig=p=>{const k=p.gk||kdef(p);return[k.rs,k.rb,k.edge,JSON.stringify(k.strokes||[])].join('|')};
+const rbNeeds=p=>rbMethod(p)==='any'&&!(p.sg&&p.sg.sig===segSig(p));
+function segFor(p){if(!(p.sg&&p.sg.sig===segSig(p)))p.sg=computeSeg(p);return p.sg}
+function computeSeg(p){
+ const k=p.gk||kdef(p),S=p.sgSrc||(p.sgSrc=makeSrc(p.img,480)),{w,h,L,A,b:Bb,R,G,B}=S,n=w*h,bc=borderClusters(S);
+ const keepM=new Uint8Array(n),remM=new Uint8Array(n);
+ for(const s of(k.strokes||[])){
+  const m=s.t==='k'?keepM:remM,rad=Math.max(1,s.r*w),ps=s.p.map(q=>[q[0]*w,q[1]*h]);
+  const stamp=(cx,cy)=>{for(let y=Math.max(0,Math.floor(cy-rad));y<=Math.min(h-1,Math.ceil(cy+rad));y++)for(let x=Math.max(0,Math.floor(cx-rad));x<=Math.min(w-1,Math.ceil(cx+rad));x++)if((x-cx)*(x-cx)+(y-cy)*(y-cy)<=rad*rad)m[y*w+x]=1};
+  ps.forEach((q,i)=>{
+   if(!i){stamp(q[0],q[1]);return}
+   const a=ps[i-1],d=Math.hypot(q[0]-a[0],q[1]-a[1]),st=Math.max(1,Math.ceil(d/(rad*.5)));
+   for(let t=1;t<=st;t++)stamp(a[0]+(q[0]-a[0])*t/st,a[1]+(q[1]-a[1])*t/st);
+  });
+ }
+ const models=[];
+ for(const c of bc.list)if((c.share>=.10&&c.edges>=2)||c.share>=.30||c===bc.list[0])models.push({mu:c.mu,rad:Math.max(5,2*c.sp)});
+ const rp=[];for(let j=0;j<n;j++)if(remM[j])rp.push(L[j],A[j],Bb[j]);
+ if(rp.length>=24){const km=kmeans(new Float32Array(rp),3,2,6);for(let c=0;c<km.k;c++)if(km.cnt[c]>=8)models.push({mu:[km.C[c*3],km.C[c*3+1],km.C[c*3+2]],rad:Math.max(5,2*km.sp[c])})}
+ if(!models.length)models.push({mu:[50,0,0],rad:1});
+ const sc=.6+k.rs/100*1.2,dB=new Float32Array(n);
+ for(let j=0;j<n;j++){let m=1e9;for(const q of models){const a=L[j]-q.mu[0],b=A[j]-q.mu[1],c=Bb[j]-q.mu[2],d=Math.sqrt(a*a+b*b+c*c)/(q.rad*sc);if(d<m)m=d}dB[j]=m}
+ const dS=gblur(dB,w,h,1),bgc=new Uint8Array(n);
+ for(let j=0;j<n;j++)bgc[j]=((dS[j]<1&&!keepM[j])||remM[j])?1:0;
+ const conn=new Uint8Array(n),st=[],push=j=>{if(bgc[j]&&!conn[j]){conn[j]=1;st.push(j)}};
+ for(let x=0;x<w;x++){push(x);push((h-1)*w+x)}
+ for(let y=0;y<h;y++){push(y*w);push(y*w+w-1)}
+ for(let j=0;j<n;j++)if(remM[j])push(j);
+ while(st.length){const j=st.pop(),x=j%w,y=(j/w)|0;if(x>0)push(j-1);if(x<w-1)push(j+1);if(y>0)push(j-w);if(y<h-1)push(j+w)}
+ const fg=new Uint8Array(n);for(let j=0;j<n;j++)fg[j]=conn[j]?0:1;
+ { // drop small stray bits, keep the main subject(s)
+  const c=comps(fg,w,h),big=Math.max(0,...c.areas.slice(1)),keepL=new Uint8Array(c.nl+1);
+  for(let l=1;l<=c.nl;l++)if(c.areas[l]>=Math.max(.004*n,.06*big))keepL[l]=1;
+  for(let j=0;j<n;j++)if(keepM[j]&&c.lab[j])keepL[c.lab[j]]=1;
+  for(let j=0;j<n;j++)if(fg[j]&&!keepL[c.lab[j]])fg[j]=0;
+ }
+ { // large background-colored gaps inside the picture (between an arm and the body, for example)
+  const gap=new Uint8Array(n);for(let j=0;j<n;j++)gap[j]=(fg[j]&&bgc[j]&&!keepM[j])?1:0;
+  const c=comps(gap,w,h);
+  for(let j=0;j<n;j++)if(gap[j]&&c.areas[c.lab[j]]>=.006*n)fg[j]=0;
+ }
+ for(let j=0;j<n;j++)if(keepM[j])fg[j]=1;
+ let F=new Float32Array(n);for(let j=0;j<n;j++)F[j]=fg[j];
+ let sm=gblur(F,w,h,1.3);for(let j=0;j<n;j++)F[j]=sm[j]>.5?1:0;
+ const shr=k.edge*w/700;
+ if(shr>.2){sm=gblur(F,w,h,shr*.7+.3);for(let j=0;j<n;j++)F[j]=sm[j]>.5+Math.min(.42,shr*.12)?1:0}
+ for(let j=0;j<n;j++)if(keepM[j])F[j]=1;
+ const rb=1+k.rb/100*6,Fi=new Float32Array(n);for(let j=0;j<n;j++)Fi[j]=1-F[j];
+ const eF=gblur(F,w,h,rb*.6+.4),eB=gblur(Fi,w,h,rb*.6+.4),sureF=new Uint8Array(n),sureB=new Uint8Array(n),bd=new Float32Array(n);
+ for(let j=0;j<n;j++){sureF[j]=eF[j]>.985?1:0;sureB[j]=eB[j]>.985?1:0;bd[j]=(sureF[j]||sureB[j])?0:1}
+ const M=gblur(F,w,h,.9),Bd=gblur(bd,w,h,.7),s1=Math.max(3,rb*1.8),local=(sure)=>{
+  const wt=new Float32Array(n),r=new Float32Array(n),g=new Float32Array(n),b=new Float32Array(n);
+  for(let j=0;j<n;j++)if(sure[j]){wt[j]=1;r[j]=R[j];g[j]=G[j];b[j]=B[j]}
+  const W1=gblur(wt,w,h,s1),R1=gblur(r,w,h,s1),G1=gblur(g,w,h,s1),B1=gblur(b,w,h,s1),W2=gblur(wt,w,h,s1*3),R2=gblur(r,w,h,s1*3),G2=gblur(g,w,h,s1*3),B2=gblur(b,w,h,s1*3);
+  const o=[new Float32Array(n),new Float32Array(n),new Float32Array(n)];
+  for(let j=0;j<n;j++){
+   const t=Math.min(1,W1[j]/.05),a1=W1[j]>1e-5?1/W1[j]:0,a2=W2[j]>1e-5?1/W2[j]:0;
+   o[0][j]=t*R1[j]*a1+(1-t)*(a2?R2[j]*a2:128);o[1][j]=t*G1[j]*a1+(1-t)*(a2?G2[j]*a2:128);o[2][j]=t*B1[j]*a1+(1-t)*(a2?B2[j]*a2:128);
+  }
+  return o;
+ };
+ const Bl=local(sureB),Fl=local(sureF);
+ return{sig:segSig(p),w,h,M,Bd,BR:Bl[0],BG:Bl[1],BB:Bl[2],FR:Fl[0],FG:Fl[1],FB:Fl[2]};
+}
+function subjectPass(x,W,H,p){
+ const sg=segFor(p),tm=p.tm,Mi=tm.M.inverse(),sw=sg.w,sh=sg.h,d=x.getImageData(0,0,W,H),px=d.data;
+ const kx=sw/tm.w,ky=sh/tm.h,ox=tm.w/2,oy=tm.h/2;
+ for(let Y=0;Y<H;Y++){
+  for(let X=0;X<W;X++){
+   const i=(Y*W+X)*4,al=px[i+3];if(!al)continue;
+   const xp=X+.5,yp=Y+.5,u=(Mi.a*xp+Mi.c*yp+Mi.e+ox)*kx-.5,v=(Mi.b*xp+Mi.d*yp+Mi.f+oy)*ky-.5;
+   const m=bil(sg.M,sw,sh,u,v),bw=bil(sg.Bd,sw,sh,u,v);
+   let a=m;
+   if(bw>.02){
+    const br=bil(sg.BR,sw,sh,u,v),bg=bil(sg.BG,sw,sh,u,v),bb=bil(sg.BB,sw,sh,u,v),fr=bil(sg.FR,sw,sh,u,v),fg=bil(sg.FG,sw,sh,u,v),fb=bil(sg.FB,sw,sh,u,v);
+    const r=px[i],g=px[i+1],b=px[i+2],dr=fr-br,dg=fg-bg,db=fb-bb,den=dr*dr+dg*dg+db*db;
+    if(den>600){
+     let t=((r-br)*dr+(g-bg)*dg+(b-bb)*db)/den;t=t<0?0:t>1?1:t;t=t*t*(3-2*t);
+     a=m*(1-bw)+t*bw;
+     if(a<.98&&a>.02){ // soft edge: replace the mixed-in background color with the subject's own nearby color
+      const kk=Math.min(1,(1-a)*1.1)*bw;
+      px[i]=r+(fr-r)*kk;px[i+1]=g+(fg-g)*kk;px[i+2]=b+(fb-b)*kk;
+     }
+    }
+   }
+   px[i+3]=al*a;
+  }
+ }
+ x.putImageData(d,0,0);
+}
+let rbBrush=null,rbPts=[],rbDown=false;
+function rbRecalc(){
+ setLoading(true,'Finding the subject…');
+ setTimeout(()=>{try{if(cur&&rbMethod(cur)==='any')segFor(cur)}catch(e){console.error(e)}setLoading(false);schedule();gsRefresh()},40);
+}
+function syncRB(){
+ const k=kr(),mt=cur?rbMethod(cur):'screen';
+ $('#gsmeth').value=k.method||'auto';$('#gsscr').hidden=mt!=='screen';$('#gsany').hidden=mt!=='any';
+ $('#rbs').value=k.rs;$('#v_rbs').textContent=k.rs;$('#rbb').value=k.rb;$('#v_rbb').textContent=k.rb;
+ $('#rbkeep').classList.toggle('on',rbBrush==='k');$('#rbrem').classList.toggle('on',rbBrush==='r');
+ $('#gsimg').classList.toggle('brush',!!rbBrush&&mt==='any');
+ rbOverlay();
+}
+function rbOverlay(){
+ const o=$('#rbov'),gi=$('#gsimg'),pr=o.parentElement.getBoundingClientRect(),ir=gi.getBoundingClientRect();
+ o.width=Math.max(1,Math.round(pr.width));o.height=Math.max(1,Math.round(pr.height));
+ const g=o.getContext('2d'),p=cur;g.clearRect(0,0,o.width,o.height);
+ if(!p||!p.tm||!gi.naturalWidth||!p.gk||!(p.gk.strokes||[]).length||rbMethod(p)!=='any')return;
+ const tm=p.tm,sc=Math.hypot(tm.M.a,tm.M.b),ox=ir.left-pr.left,oy=ir.top-pr.top;
+ g.lineCap='round';g.lineJoin='round';
+ for(const s of p.gk.strokes){
+  g.strokeStyle=s.t==='k'?'rgba(60,210,100,.5)':'rgba(240,70,70,.5)';g.lineWidth=Math.max(2,2*s.r*tm.w*sc/tm.W*ir.width);
+  g.beginPath();
+  s.p.forEach(([u,v],i)=>{const q=tm.M.transformPoint({x:u*tm.w-tm.w/2,y:v*tm.h-tm.h/2}),X=ox+q.x/tm.W*ir.width,Y=oy+q.y/tm.H*ir.height;i?g.lineTo(X,Y):g.moveTo(X,Y)});
+  if(s.p.length===1)g.lineTo(ox+(tm.M.transformPoint({x:s.p[0][0]*tm.w-tm.w/2,y:s.p[0][1]*tm.h-tm.h/2}).x/tm.W*ir.width)+.1,oy+(tm.M.transformPoint({x:s.p[0][0]*tm.w-tm.w/2,y:s.p[0][1]*tm.h-tm.h/2}).y/tm.H*ir.height));
+  g.stroke();
+ }
+}
+$('#gsimg').addEventListener('load',rbOverlay);
+$('#gsmeth').onchange=e=>{const k=kw();k.method=e.target.value;rbBrush=null;syncGS();if(cur&&rbNeeds(cur))rbRecalc();else gsGo()};
+{
+ let tmr=0;const slow=()=>{clearTimeout(tmr);tmr=setTimeout(()=>{if(cur&&rbNeeds(cur))rbRecalc();else gsGo()},180)};
+ $('#rbs').oninput=e=>{kw().rs=+e.target.value;$('#v_rbs').textContent=e.target.value;slow()};
+ $('#rbb').oninput=e=>{kw().rb=+e.target.value;$('#v_rbb').textContent=e.target.value;slow()};
+}
+$('#rbsz').oninput=e=>{$('#v_rbsz').textContent=e.target.value};
+$('#rbkeep').onclick=()=>{rbBrush=rbBrush==='k'?null:'k';syncRB()};
+$('#rbrem').onclick=()=>{rbBrush=rbBrush==='r'?null:'r';syncRB()};
+$('#rbundo').onclick=()=>{const k=kw();if(k.strokes.length){k.strokes.pop();rbRecalc()}};
+$('#rbclr').onclick=()=>{const k=kw();if(k.strokes.length){k.strokes=[];rbRecalc()}};
+$('#gsimg').addEventListener('pointerdown',e=>{
+ if(!rbBrush||!cur||rbMethod(cur)!=='any')return;
+ e.preventDefault();rbDown=true;const r=e.currentTarget.getBoundingClientRect();
+ rbPts=[[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]];e.currentTarget.setPointerCapture(e.pointerId);
+});
+$('#gsimg').addEventListener('pointermove',e=>{
+ if(!rbDown)return;
+ const r=e.currentTarget.getBoundingClientRect(),q=[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height],l=rbPts[rbPts.length-1];
+ if(Math.hypot(q[0]-l[0],q[1]-l[1])>.004){
+  rbPts.push(q);
+  const o=$('#rbov'),g=o.getContext('2d'),pr=o.parentElement.getBoundingClientRect(),ox=r.left-pr.left,oy=r.top-pr.top,a=rbPts[rbPts.length-2];
+  g.strokeStyle=rbBrush==='k'?'rgba(60,210,100,.5)':'rgba(240,70,70,.5)';g.lineCap='round';g.lineWidth=2*(+$('#rbsz').value/100)*r.width;
+  g.beginPath();g.moveTo(ox+a[0]*r.width,oy+a[1]*r.height);g.lineTo(ox+q[0]*r.width,oy+q[1]*r.height);g.stroke();
+ }
+});
+function rbEnd(){
+ if(!rbDown)return;rbDown=false;
+ const pts=rbPts;rbPts=[];
+ if(!pts.length||!cur||!cur.tm)return;
+ const tm=cur.tm,inv=tm.M.inverse(),rOut=+$('#rbsz').value/100,a=inv.transformPoint({x:0,y:0}),b=inv.transformPoint({x:rOut*tm.W,y:0});
+ const toSrc=q=>{const s=inv.transformPoint({x:q[0]*tm.W,y:q[1]*tm.H});return[(s.x+tm.w/2)/tm.w,(s.y+tm.h/2)/tm.h]};
+ kw().strokes.push({t:rbBrush,r:Math.hypot(b.x-a.x,b.y-a.y)/tm.w,p:pts.map(toSrc)});
+ rbRecalc();
+}
+['pointerup','pointercancel'].forEach(n=>$('#gsimg').addEventListener(n,rbEnd));
+document.querySelectorAll('details.tool').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)document.querySelectorAll('details.tool').forEach(o=>{if(o!==d)o.open=false})}));
 const removed=[];
 const noModal=()=>['modal','wsmodal','gsmodal','expmodal'].every(id=>$('#'+id).hidden);
 function removeCur(){removePhoto(photos.indexOf(cur))}
